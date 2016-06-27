@@ -6,7 +6,9 @@
   "jsnext:main": "index.es6.js",
   "scripts": {
     "build": "rollup -c",
+    "dev": "npm-run-all --parallel watch browse",
     "watch": "rollup -c -w",
+    "browse": "browser-sync start --s --index 'index.html' --files 'index.html, src/*.js, src/**/*.js, *.md' --no-notify --no-open --reload-delay 5000",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -30,6 +32,8 @@
     "remark": "pospi/remark#develop"
   },
   "devDependencies": {
+    "browser-sync": "^2.13.0",
+    "npm-run-all": "^2.2.2",
     "rollup": "^0.30.0",
     "rollup-plugin-buble": "^0.12.1",
     "rollup-plugin-commonjs": "^3.1.0",

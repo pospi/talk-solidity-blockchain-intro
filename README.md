@@ -10,7 +10,7 @@ Built using http://remarkjs.com/ and http://rollupjs.org
 # Running
 
 - `npm run build` & open `index.html` directly (bundled packages intentionally ommitted), or
-- `npm run watch`
+- `npm run dev`
 
 # Editing
 
