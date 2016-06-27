@@ -1,0 +1,43 @@
+{
+  "name": "@pospi/solidity-intro-slides",
+  "version": "1.0.0",
+  "description": "Solidity & Systems Programming on the Blockchain",
+  "main": "index.js",
+  "jsnext:main": "index.es6.js",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/pospi/solidity-intro-slides.git"
+  },
+  "keywords": [
+    "Solidity",
+    "Ethereum",
+    "Tutorial",
+    "Notes"
+  ],
+  "author": "pospi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pospi/solidity-intro-slides/issues"
+  },
+  "homepage": "https://github.com/pospi/solidity-intro-slides#readme",
+  "dependencies": {
+    "almond": "^0.3.2",
+    "remark": "pospi/remark#develop"
+  },
+  "devDependencies": {
+    "rollup": "^0.30.0",
+    "rollup-plugin-buble": "^0.12.1",
+    "rollup-plugin-commonjs": "^3.1.0",
+    "rollup-plugin-json": "^2.0.1",
+    "rollup-plugin-node-builtins": "^1.0.4",
+    "rollup-plugin-node-globals": "^1.0.5",
+    "rollup-plugin-node-resolve": "^1.7.1",
+    "rollup-plugin-string": "^2.0.2",
+    "rollup-watch": "^2.4.0"
+  }
+}
