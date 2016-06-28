@@ -47,11 +47,11 @@ background-image: url(./res/leaf.jpg)
 
 ---
 name: suggestion
+template: base
 layout: true
 background-image: url(./res/leaf.jpg)
 
 <div class="slide-suggestion">
-    <img class="suggestimg" src="./res/avatar_128x128-4.png" />
     <h1>Suggestions</h1>
 {{ content }}
 </div>
@@ -86,27 +86,42 @@ template: start
     -> We can declare repeated first and second-level headers by using HTML without MarkdownTOC 
        generating extra entries.
 -->
-<!-- MarkdownTOC depth=2 -->
+<!-- MarkdownTOC depth=3 -->
 
 - [Same concepts, different environment](#same-concepts-different-environment)
 - [Solidity is not the end-all](#solidity-is-not-the-end-all)
 - [Words of caution](#words-of-caution)
 - [Best places to get started](#best-places-to-get-started)
 - [Micro-optimisations are important](#micro-optimisations-are-important)
+- [Quantifying 'efficiency'](#quantifying-efficiency)
+- [A blockchain is not always the answer](#a-blockchain-is-not-always-the-answer)
 - [Types](#types)
     - [Value types](#value-types)
+        - [Constants](#constants)
     - [Reference types](#reference-types)
+        - [Data location](#data-location)
+        - [Handling Data location](#handling-data-location)
     - [Arrays](#arrays)
+        - [Byte arrays](#byte-arrays)
+        - [Reference arrays](#reference-arrays)
+        - [Using arrays](#using-arrays)
+        - [Array caveats](#array-caveats)
     - [Other reference types](#other-reference-types)
     - [Addresses](#addresses)
+        - [Address methods](#address-methods)
+        - [Address magic](#address-magic)
 - [Control flow & syntax](#control-flow--syntax)
     - [Interpreter caveats](#interpreter-caveats)
     - [Function modifiers](#function-modifiers)
     - [Contract structure](#contract-structure)
     - [Method visibility](#method-visibility)
     - [Contracts calling contracts](#contracts-calling-contracts)
+        - [Reference types and contract interfaces](#reference-types-and-contract-interfaces)
     - [Library code](#library-code)
+        - [Libraries as datatypes](#libraries-as-datatypes)
     - [What are contract events?](#what-are-contract-events)
+        - [Event interface](#event-interface)
+        - [Event interface \(cot'd\)](#event-interface-cotd)
 - [Code best-practises](#code-best-practises)
     - [Iteration vs recursion](#iteration-vs-recursion)
     - [Mapping vs. Array](#mapping-vs-array)
@@ -239,10 +254,6 @@ Pre-increment vs. post-increment, `for` vs `foreach`, references vs. copies: all
     </li>
 </ul>
 
-### Quantifying 'efficiency'
-
-Three metrics: gas cost (in `wei`), reserved storage size (in `bytes`) & bytecode size (also measurable in `bytes`). Note that contract storage is statically allocated *once* at the time you deploy a contract and its size never changes thereafter, so some interfaces may give you back a single value for *'contract size'* at the time of compilation.
-
 
 
 
@@ -250,18 +261,29 @@ Three metrics: gas cost (in `wei`), reserved storage size (in `bytes`) & bytecod
 
 
 ---
-template: suggestion
+name: quantifying-efficiency
+# Quantifying 'efficiency'
+
+Three metrics: gas cost (in `wei`), reserved storage size (in `bytes`) & bytecode size (also measurable in `bytes`). Note that contract storage is statically allocated *once* at the time you deploy a contract and its size never changes thereafter, so some interfaces may give you back a single value for *'contract size'* at the time of compilation.
 
 ***Relative importance: gas cost > storage size > bytecode size.***
 
-In general, you will want to prioritise architectural decisions in that order. Note that performance (in terms of speed) should **not** be a concern to you. *"CPU-intensive"* in this environment means on the order of sorting an array of more than 50 elements&mdash; not much horsepower at all!
- 
-CPU-intensive operations like sorting large arrays should be placed off-chain and run by a trusted party. Note also that the results of such computations are easily auditable by running parallel off-chain proofing servers to verify the primary server's on-chain output/input, and can be easily managed via `Owned` contract base classes and `OwnerOnly` function modifiers.
+In general, you will want to prioritise architectural decisions in this order. Note that performance (in terms of speed) should **not** be a concern to you. *"CPU-intensive"* in this environment means on the order of sorting an array of more than 50 elements&mdash; not much horsepower at all!
 
 - Prioritise the gas cost of interacting with your contracts above all else. Some statisticians have claimed that a single bitcoin transaction causes as much CO<sub>2</sub> pollution as keeping a car on the road for *3 days*. Remember that all computation costs energy and that your effects here are amplified by the size of the network.
 - Storage and bytecode size are equivalent priorities, but storage is more under your control:
     - Be dilligent about utilising contract storage variables fully and allocating as little space as possible for dynamic arrays. 
     - Learn to understand how the Solidity compiler handles your code and build up a library of optimal libraries and algorithms for common tasks. Use Mix or your test framework to compare bytecode sizes for contract generation.
+
+
+
+
+
+---
+name: a-blockchain-is-not-always-the-answer
+# A blockchain is not always the answer
+ 
+CPU-intensive operations like sorting large arrays should be placed off-chain and run by a trusted party. Note also that the results of such computations are easily auditable by running parallel off-chain proofing servers to verify the primary server's on-chain output/input, and can be easily managed via `Owned` contract base classes and `OwnerOnly` function modifiers (to be examined later).
 
 
 
@@ -280,6 +302,9 @@ Solidity has the usual memory-centric datatypes we're used to seeing in low-leve
 
 Its reference types take on an additional attribute in their *"context"*- defined as either `storage` or `memory`. This language keyword is all that is needed to differentiate between persistent data stored on-chain and transient data used during intermediate computations.
 ]
+
+???
+:TODO: this is actually probably a good place to go into detail about how RAM & disk are merged
 
 
 
@@ -470,7 +495,7 @@ Arrays and `bytes` both have a `length` member and a `push` method that most wil
 ]
 .right-column[
 
-### Array Caveats
+### Array caveats
 
 - Array types will be coerced to the most generic type of its contents. So an array with many `uint8`s in it will be interpreted as `uint8`, whereas one containing both `uint8` and `uint16` would be interpreted as `uint16`.
 - Fixed-size and dynamically-sized arrays cannot be mixed *(yet- this is planned to be resolved in future)*
@@ -677,6 +702,9 @@ name: control-flow--syntax
   ```
 
 ]
+
+???
+:TODO: can tuples be unpacked, or are they just for handling function args?
 
 
 
@@ -923,11 +951,11 @@ name: library-code
 
 A code library in Ethereum is just a contract declared with the `library` keyword instead of `contract`. Libraries can have no `storage` of their own and are always compiled to `delegatecall` by the compiler.
 
-When deploying, the library will actually be deployed to a separate contract on the blockchain.
+> If you use libraries, take care that an actual external function call is performed.
+
+.caveat[When deploying, the library will actually be deployed to a separate contract on the blockchain.] All external function call rules apply.
 
 It's important to note the importance of the `storage` keyword in function parameters for libraries. Without this keyword, functions will create a deep copy of any arguments passed in, which is not only expensive in memory consumption but also means that modifying storage directly via library methods would not be possible- which is where the power of `delegatecall` comes from.
-
-> If you use libraries, take care that an actual external function call is performed.
 
 > calls to library functions look just like calls to functions of explicit base contracts (`L.f()` if `L` is the name of the library).
 
@@ -937,6 +965,71 @@ It's important to note the importance of the `storage` keyword in function param
 :TODO: can you pass memory values in as `storage` args?
 
 :TODO: this is interesting cos it means you pretty well *can* just apply a c'tor over an address and interface with it. Is interfacing with other contracts via `delegatecall` any different?
+
+If this turns out to be the case then *All external function call rules apply.* no longer applies!
+
+
+
+
+
+
+---
+name: libraries-as-datatypes
+.left-column[
+<h1>Control flow & syntax</h1>
+<h2>Interpreter caveats</h2>
+<h2>Function modifiers</h2>
+<h2>Contract structure</h2>
+<h2>Method visibility</h2>
+<h2>Contracts calling contracts</h2>
+<h2>Library code</h2>
+### Libraries as datatypes
+]
+.right-column[
+The most useful application of libraries appears to be as extensions to the core datatypes available in the language. For example (taken from the docs), given the library:
+
+```
+library Set {
+    // We define a new struct datatype that will be used to
+    // hold its data in the calling contract.
+    struct Data { mapping(uint => bool) flags; }
+  
+    // Note that the first parameter is of type "storage
+    // reference" and thus only its storage address and not
+    // its contents is passed as part of the call.  This is a
+    // special feature of library functions.  It is idiomatic
+    // to call the first parameter 'self', if the function can
+    // be seen as a method of that object.
+    function insert(Data storage self, uint value)
+        returns (bool)
+    {
+        if (self.flags[value])
+            return false; // already there
+        self.flags[value] = true;
+        return true;
+    }
+  
+    function remove(Data storage self, uint value)
+        returns (bool)
+    {
+        if (!self.flags[value])
+            return false; // not there
+        self.flags[value] = false;
+        return true;
+    }
+  
+    function contains(Data storage self, uint value)
+        returns (bool)
+    {
+        return self.flags[value];
+    }
+}
+```
+
+]
+
+???
+:TODO: finish this
 
 
 
@@ -1484,15 +1577,35 @@ http://vessenes.com/deconstructing-thedao-attack-a-brief-code-tour/
 - The splitDAO function should be mutexed and keep permanent track of the status of each possible splitter, not just through token tracking.
 
 
-https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s   (discussion on proof-based languages for smart contracts)
-
-
 https://pdaian.com/blog/chasing-the-dao-attackers-wake/
 
 > As a recommendation, do not call external contract code in your contract using Solidity’s call construct, ever if you can avoid it.  If you can’t, do it last and understand that you lose all guarantees as to the program flow of your contract at that point.
 
-
+???
 example @ http://vessenes.com/more-ethereum-attacks-race-to-empty-is-the-real-deal/
+
+:TODO:
+https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s   (discussion on proof-based languages for smart contracts)
+
+
+
+
+
+
+---
+template: suggestion
+
+Having written C, C++ and Java but also having written JavaScript using functional methodologies it's easy to see how Solidity *could* be leveraged to build rock-solid Dapps. It's also easy to see how you can shoot yourself in the foot with it. Some code smells we seem to be repeating here:
+
+- *"Function modifiers"* in Solidity are basically like *"mixins"* in JavaScript. The only thing that differentiates them is the 
+- OO-style inheritance and external library behaviour immediately makes reusing code efficiently cumbersome.
+- Implicit state access between scope is always a bad idea. Always. PHP is the only language I've used that does this 'right'.
+- Creating a paradigm where monolithic contracts are the norm for efficiency reasons is bad for code quality and logic isolation reasons. I don't know if this is happening or what the solution is, but that mindset should be avoided...
+
+???
+:TODO: finish slide.
+
+Lib funcs allow `using` / `for` to avoid the mixin collision issue, but functions from parent classes don't appear to?
 
 
 
@@ -1533,8 +1646,27 @@ List to come...
 ???
 :TODO: 
 
-
-
+- `Destructible`  
+  (fun `destroy`)
+- & `Transferrable`  
+  (fun `transferOwnership`)
+    - is `Ownable`  
+      (prop `address owner`)  
+      (mod `OwnerOnly`)
+- `Splittable`  
+  (fun `split`)  
+  *(no doubt will need some interfaces here)*
+    - is `MajorityOwnable`  
+      (prop `mapping(address => uint) owners`)  
+      *(don't like this - would necessitate new class for every data size)*
+      (fun `purchaseOwnership`)  
+      (fun `withdrawOwnership`)  
+      (ifce `calcPurchaseAmount`)  
+      (ifce `calcWithdrawAmount`)  
+      (ifce `calcVotingInput`)
+- really don't want to have to do `MajoritySplittable` etc, am I doing it wrong?
+- thinking conventions... 'owner'/'purchase'/'calc' for things involving $!
+- registrar: see `dapp-bin/registry`
 
 
 
@@ -1542,6 +1674,19 @@ List to come...
 ---
 name: function-libraries
 # Function libraries
+
+- `CallProxy` (helper)  
+  (fun `setCallTarget(account)`)  
+  *(however methods are proxied?)*
+- `AccountList` (datatype)  
+  (fun `indexOf(account)`)
+
+???
+:TODO: 
+
+- find a well unit-tested storage framework (or make one)
+- ADTs for efficient storage
+- audit this stuff again, get more specific links
 
 - https://github.com/Arachnid/ens - Ethereum Name Service
 - https://github.com/Arachnid/solidity-stringutils
@@ -1559,7 +1704,8 @@ name: function-libraries
 - https://github.com/smartcontractproduction/dao
 - https://github.com/zmitton/ethereum_escrow
 
-<sub>*<em>Please note: you can grab all these by running `npm run get-example-libs` after cloning this repository.</em></sub>
+<sub>*<em>Please note: you can grab all these by running `./get-example-libs.sh` after cloning this repository.</em></sub>
+
 
 
 
@@ -1577,7 +1723,7 @@ template: callout
         - Linters and unit tests need to be the norm, at minimum
         - Better languages are needed: OCaml or Haskell-like, code as provable theorems
 - All external function calls are untrusted and could come in from anywhere.
-- There are absolutely no guarantees as to another contract's state unless cryptographically provable to be authored from a given source code.
+- There are **absolutely no guarantees** as to another contract's state or behaviour unless cryptographically provable to be authored from a given source code.
 
 
 
