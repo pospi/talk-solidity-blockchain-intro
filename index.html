@@ -4,16 +4,120 @@
     <title>Solidity &amp; Systems Programming on the Blockchain | pospi</title>
     <meta charset="utf-8">
     <style>
-      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
-      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
-      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+        @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+        @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+        @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
 
-      body { font-family: 'Droid Serif'; }
-      h1, h2, h3 {
-        font-family: 'Yanone Kaffeesatz';
-        font-weight: normal;
-      }
-      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+        /* toplevel typography */
+        * { box-sizing: border-box; }
+        body { font-family: 'Droid Serif'; }
+        h1, h2, h3 {
+            font-family: 'Yanone Kaffeesatz';
+            font-weight: normal;
+        }
+        sub, sup { font-size: 0.6em; line-height: 1; }
+
+        /* Remark overrides */
+        .remark-slide-content {
+            padding: 3em 2.5em 6em 2.5em;
+            font-size: 16px;
+        }
+        .remark-slide-content h1 { font-size: 2.5000em; line-height: 1.2000; margin-top: 0.9000em; margin-bottom: 0.0000em; }
+        .remark-slide-content h2 { font-size: 1.5625em; line-height: 1.9200; margin-top: 1.4300em; margin-bottom: 0.0000em; }
+        .remark-slide-content h3 { font-size: 1.2500em; line-height: 1.2000; margin-top: 1.8000em; margin-bottom: 0.0000em; }
+        .remark-slide-content h4 { font-size: 1.0000em; line-height: 1.5000; margin-top: 2.2500em; margin-bottom: 0.0000em; }
+        .remark-slide-content h5 { font-size: 0.8750em; line-height: 1.7143; margin-top: 3.4286em; margin-bottom: 0.0000em; }
+        .remark-slide-content h1:nth-child(2),  /* :NOTE: first-child is the <header> in Remark markdown file */
+        .remark-slide-content h2:nth-child(2),
+        .remark-slide-content h3:nth-child(2),
+        .remark-slide-content h4:nth-child(2),
+        .remark-slide-content h5:nth-child(2) {
+            margin-top: 0;
+        }
+        .remark-code, .remark-inline-code {
+            font-family: 'Ubuntu Mono';
+            border-radius: 3px;
+            font-size: 16px;
+        }
+        .remark-inline-code {
+            /* note: match solarized */
+            color: #839496;
+            /*background: #002b36;*/
+            background: #fdf6e3;
+            padding: 0.1em 0.3em;
+        }
+        .remark-slide-number {
+            color: #AAA;
+            opacity: 1;
+        }
+
+        /* general styles */
+        a, a:visited, a:hover { color: #7724ab; }
+
+        ::-moz-selection { background: #66019C; color: #fff; }
+        ::selection { background: #66019C; color: #fff; }
+        mark { background: #66019C; color: #fff; font-style: italic; font-weight: bold; }
+
+        img { vertical-align: middle; }
+        textarea { resize: vertical; }
+
+
+        /* Two-column layout */
+        .left-column {
+            color: #777;
+            width: 20%;
+            height: 92%;
+            float: left;
+        }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+            color: #000;
+        }
+        .right-column {
+            width: 75%;
+            float: right;
+            padding-top: 1em;
+        }
+
+        /* slide footer */
+        footer, header {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            background: #5100D4;
+            color: white;
+            padding: 0 1em;
+        }
+        footer {
+            bottom: 0;
+            height: 4em;
+            border-top: 4px solid #1D0052;
+        }
+        header {
+            top: 0;
+            height: 2em;
+            border-bottom: 4px solid #1D0052;
+        }
+        header h6, footer ul {
+            font-size: 10px;
+            margin: 0;
+        }
+        header h6 {
+            margin: 0.75em 2.5em;
+        }
+        footer a, footer a:visited, footer a:hover {
+            color: white;
+        }
+        footer ul {
+            margin: 0.5em 0;
+        }
+        footer li {
+            list-style: none;
+            float: left;
+            width: 50%;
+        }
+        footer li:first-child {
+            width: 100%;
+        }
     </style>
   </head>
   <body>
