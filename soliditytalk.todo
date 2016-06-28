@@ -1,29 +1,35 @@
 Slide deck:
- ☐ embed notes
- ☐ iconfont for FB/twitter icons
- ☐ icon & background image
  ☐ get syntax highlighting for solidity working if possible:
     ☐ https://github.com/consensys/contract-viewer
- ☐ define where images need to go
+    ☐ see if this fixes DAO what went wrong slide layout
+ ☐ extract caveats & make clearer
+ ☐ maybe make suggestions into labels on other slides instead of takeovers
+ ☐ go through todos, work out images & demo code needed:
+   ☐ images:
+     ☐ ....
+   ☐ demo code:
+     ☐ ....
+ ☐ setup npm script for cloning libraries
 
 
 Research:
-- Test how fixed point rounding works
-- Unit testing framework that outputs useful benchmarking data:
-    - [confirm the following assumptions](http://ethereum.stackexchange.com/q/5957/2665):
-    - gas cost (indicator of computational complexity / electrical cost; estimated and actual)
-    - memory & storage usage (indicator of long-term storage efficiency)
-    - See if sol-unit / sunit is runnable and try to plug something in to it
-- Benchmark various techniques to work out what's best
-    - Understand inheritance: concatenative or delegative?
-    - is `delegatecall` really as awesome as it seems to be?
-- ABI encoders / decoders
-- ADTs along the lines of the C STL
-- Useful base classes
-- Design patterns
-- Interfacing with IPFS?
+ ☐ get dapple setup and see how unit testing operates
+ - Test how fixed point rounding works
+ - Unit testing framework that outputs useful benchmarking data:
+     - [confirm the following assumptions](http://ethereum.stackexchange.com/q/5957/2665):
+     - gas cost (indicator of computational complexity / electrical cost; estimated and actual)
+     - memory & storage usage (indicator of long-term storage efficiency)
+     - See if sol-unit / sunit is runnable and try to plug something in to it
+ - Benchmark various techniques to work out what's best
+     - Understand inheritance: concatenative or delegative?
+     - is `delegatecall` really as awesome as it seems to be?
+ - ABI encoders / decoders
+ - ADTs along the lines of the C STL
+ - Useful base classes
+ - Design patterns
+ - Interfacing with IPFS?
 
-Is it possible, or will it be possible, to bind Solidity types and contract source code to bytecode for debugging purposes, for external contracts someday? or now? can i hack mix?
+ ☐ Is it possible, or will it be possible, to bind Solidity types and contract source code to bytecode for debugging purposes, for external contracts someday? or now? can i hack mix?
 
-Can `bytes` be longer than 32?
-If so, all that stuff about 256 = 32 * 8 can go
+ ☐ Can `bytes` be longer than 32?
+   If so, all that stuff about 256 = 32 * 8 can go
