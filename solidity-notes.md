@@ -27,6 +27,7 @@ name: base
 
 - [Same concepts, different environment](#same-concepts-different-environment)
 - [Solidity is not the end-all](#solidity-is-not-the-end-all)
+- [Words of caution](#words-of-caution)
 - [Best places to get started](#best-places-to-get-started)
 - [Micro-optimisations are important](#micro-optimisations-are-important)
 - [Types](#types)
@@ -112,6 +113,14 @@ All compile to EVM bytecode. Solidity was not the first EVM-compiled language, a
 
 Solidity is also arguably not very well suited to the task &mdash; see The Great DAO Hack! We'll come back to this later...
 
+
+
+---
+# Words of caution
+
+> Do not develop Solidity contracts without a reasonable grasp of the underlying Ethereum Virtual Machine execution model, particularly around gas costs.
+>
+> &mdash; <cite>http://vessenes.com/ethereum-griefing-wallets-send-w-throw-considered-harmful/</cite>
 
 
 ---
