@@ -102,13 +102,36 @@
             padding-top: 1em;
         }
 
-        /************************* START SLIDE TYPES **************************/
+        /********************* START SLIDE CLASS MODIFIERS ********************/
+
+        .center {
+            text-align: center;
+        }
+
+        /************************* START SLIDE VARIANTS ***********************/
+        /* @see top sections of actual markdown file parsed by Remark- solidity-notes.md et al */
+
+        .slide-start {
+            color: white;
+            /* :IMPORTANT: depends on background-image property of template in markdown file */
+        }
+
+        .slide-start ul {
+            font-size: 1.5em;
+            list-style: none;
+            width: 40%;
+            float: left;
+            padding: 0;
+            margin: 5em 5% 0 5%;
+        }
+
+        /*------------------------------*/
 
         .slide-suggestion {
             color: #F0F;
         }
 
-        /************************** END SLIDE TYPES ***************************/
+        /************************* END SLIDE VARIANTS *************************/
 
         /* slide header & footer */
         footer, header {
@@ -141,14 +164,27 @@
         }
         footer ul {
             margin: 0.5em 0;
+            padding: 0;
         }
         footer li {
             list-style: none;
             float: left;
-            width: 50%;
+            width: 40%;
         }
         footer li:first-child {
-            width: 100%;
+            width: 15%;
+        }
+        footer img {
+            float: left;
+            width: 5em;
+        }
+        footer strong {
+            display: block;
+            float: left;
+            margin-left: 1em;
+        }
+        footer a {
+            text-decoration: none;
         }
     </style>
   </head>

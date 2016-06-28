@@ -11,7 +11,7 @@ layout: true
 
 <footer>
     <ul>
-        <li><img src="./img/avatar_128x128-4.png" /><strong>pospi</strong></li>
+        <li><img src="./res/avatar_128x128-4.png" /><strong>pospi</strong></li>
         <li><i class="icon-link"></i> http://pospi.spadgos.com</li>
         <li><i class="icon-github"></i> https://github.com/pospi</li>
         <li><i class="icon-mail"></i> pospi@spadgos.com</li>
@@ -22,11 +22,13 @@ layout: true
 ---
 name: start
 layout: true
+background-image: url(./res/leaf.jpg)
 
 <div class="slide-start">
     {{ content }}
     <ul>
-        <li><strong>pospi</strong></li>
+        <li class="center"><strong>pospi</strong><br /><img src="./res/avatar_128x128-4.png" /></li>
+    </ul><ul>
         <li><i class="icon-link"></i> http://pospi.spadgos.com</li>
         <li><i class="icon-mail"></i> pospi@spadgos.com</li>
         <li><i class="icon-github"></i> https://github.com/pospi</li>
@@ -58,10 +60,17 @@ name: default
 template: base
 layout: true
 
+---
+
+template: start
+
+
+
+
 
 <!-- Begin presentation -->
 
-
+# Solidity & Systems Programming on the Blockchain
 
 
 
