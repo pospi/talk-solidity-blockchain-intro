@@ -159,17 +159,18 @@ Two metrics: bytecode size and wei cost (estimated and actual).
 
 
 ---
+.left-column[
 # Types
-
-
 ## Value types
+]
+.right-column[
 
-- int8..int256, uint8..uint256
+- integers: `int8`..`int256`, `uint8`..`uint256`
     - without the qualifier will use the `*256`-sized types
-- bool 
+- `bool` 
     - uses 1 byte for storage
-- fixed byte arrays: byte/bytes1..bytes32
-    - assignment must be done with bitwise operators currently(?)
+- fixed byte arrays: `byte`/`bytes1`..`bytes32`
+    - assignment must be done with bitwise operators currently; eg. `byteArr |= 1 << 3` to set the 4th value. <!-- :TODO: check your bit-math, guy :p -->
     - has a `length` attribute
 - No floats, but fixed-point math is built in to the syntax
     - see `ufixed8x248`, `ufixed128x128` and similar types- 
@@ -177,6 +178,7 @@ Two metrics: bytecode size and wei cost (estimated and actual).
 - enums (c-like, stored as smallest possible `int` type)
 - time units and ether units can all be entered literally for convenience and are interpreted as the base type (`wei` and `second`). `2 ether == 2000 finney`, `1 minutes == 60 seconds` etc. Note that all arithmetic uses ideal time and does not account for timezones, leap seconds or otherwise.
 
+]
 
 
 ---
