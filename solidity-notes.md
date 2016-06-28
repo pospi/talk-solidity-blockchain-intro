@@ -1,7 +1,7 @@
-layout: true
 name: base
+layout: true
 
-<!-- Remark base template -->
+<!-- Remark template definitions -->
 
 <header>
     <h6>Solidity &amp; Systems Programming on the Blockchain <span style="float: right;">13 Jul 2016</span></h6>
@@ -20,7 +20,28 @@ name: base
 </footer>
 
 ---
+name: suggestion
+template: base
+layout: true
 
+<div class="slide-suggestion">
+    <h1>Suggestion</h1>
+{{ content }}
+</div>
+
+---
+name: default
+template: base
+layout: true
+
+
+<!-- Begin presentation -->
+
+
+
+
+
+---
 # Agenda
 
 <!-- MarkdownTOC -->
