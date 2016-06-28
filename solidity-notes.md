@@ -356,6 +356,8 @@ contract C {
 }
 ```
 
+.caveat[There is also a `constant` keyword for functions, but it is not yet enforced.]
+
 ]
 
 
@@ -760,7 +762,7 @@ function destroy onlyOwner () {
 }
 ```
 
-Modifiers can accept arguments, which are referenced from contract state variables. They are inheritable and overridable like normal methods. Multiple modifiers are evaluated left to right.
+Modifiers can accept arguments, which are referenced from contract state variables. They are inheritable and overridable like normal methods. Multiple modifiers are evaluated left to right. The built-in visibility modifiers don't have to come before your custom ones, but they should- it's in the official style guide.
 ]
 
 ???
@@ -1111,6 +1113,8 @@ Basically events are ways of easily exposing data to external callers. The block
 >}
 >```
 
+Events can also be `anonymous`, which prevents the event signature being stored as a topic in the transaction log. It will still be there though.
+
 ]
 
 
@@ -1403,7 +1407,7 @@ name: some-real-stats-quicksort-vs-heapsort
 name: misc-gotchas
 # Misc gotchas
 
-You can consider all of these a .caveat[]...
+You can consider all of these a <span class="caveat">&hellip;</span>
 
 - Always call local methods in aliased form, ie. call `f()`, not `this.f()`. The former is faster as it allows pass-by-reference- _once you call between contracts, data must be copied by value_.
 - Never use `now` or `block.hash` as a source of randomness, unless you know what you are doing!
@@ -1618,7 +1622,7 @@ Having written C, C++ and Java but also having written JavaScript using function
 
 - *"Function modifiers"* in Solidity are basically like *"mixins"* in JavaScript. The only thing that differentiates them is the 
 - OO-style inheritance and external library behaviour immediately makes reusing code efficiently cumbersome.
-- Implicit state access between scope is always a bad idea. Always. PHP is the only language I've used that does this 'right'.
+- Implicit state access between scope is always a bad idea. Always. PHP is the only imperative language I've used that manages lexical scope 'safely'.
 - Creating a paradigm where monolithic contracts are the norm for efficiency reasons is bad for code quality and logic isolation reasons. I don't know if this is happening or what the solution is, but that mindset should be avoided...
 
 ???
