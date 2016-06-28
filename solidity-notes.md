@@ -52,7 +52,7 @@ layout: true
 background-image: url(./res/leaf.jpg)
 
 <div class="slide-suggestion">
-    <h1>Suggestions</h1>
+    <h1>Suggestions&hellip;</h1>
 {{ content }}
 </div>
 
