@@ -151,6 +151,8 @@ Solidity should be thought of as a *systems programming language*. Though syntac
 - Deployed contracts ~= Objects
 - Deployed contract address ~= memory address ~= file inode
 
+<!-- :TODO: picture -->
+
 RAM & hard disk are combined since Ethereum's execution *as a program* and its blockchain storage *as state* are fused into the same thing. As we'll soon see, "reading a file" is no longer a task we need be concerned with.
 
 **Ethereum is a low-level system**. Think of it like programming for an Onion Omega or Raspberry Pi. Resources are extremely scarce. There isn't even a floating point unit (yet!).
@@ -185,9 +187,9 @@ Statements like this should give us *all* pause for thought here. But please, do
 ---
 # Best places to get started
 
-http://solidity.readthedocs.io/ (most complete reference material I could find)
-https://ethereumbuilders.gitbooks.io/guide/ (an oldie but a goodie, also contains some Serpent documentation)
-https://docs.erisindustries.com/tutorials/solidity/ <!-- :TODO: QA this -->
+- http://solidity.readthedocs.io/ (most complete reference material I could find)
+- https://ethereumbuilders.gitbooks.io/guide/ (an oldie but a goodie, also contains some Serpent documentation)
+- https://docs.erisindustries.com/tutorials/solidity/ <!-- :TODO: QA this -->
 
 
 
@@ -210,7 +212,22 @@ Pre-increment vs. post-increment, `for` vs `foreach`, references vs. copies: all
     </li>
 </ul>
 
-Two metrics: bytecode size and wei cost (estimated and actual).
+## Quantifying 'efficiency'
+
+Three metrics: wei cost, storage size & bytecode size.
+
+
+---
+template: suggestion
+
+Place these things in the order given in terms of priority. Note that performance (in terms of speed) should **not** be a concern to you. *"CPU-intensive"* in this environment means on the order of sorting an array of more than 50 elements&mdash; not much horsepower at all!
+ 
+CPU-intensive operations like sorting large arrays should be placed off-chain and run by a trusted party. Note also that the results of such computations are easily auditable by running parallel off-chain proofing servers to verify the primary server's on-chain output/input.
+
+- Prioritise the gas cost of interacting with your contracts above all else. Heresay statistics have claimed that a single bitcoin transaction causes as much CO<sub>2</sub> pollution as keeping a car on the road for *3 days*. Remember that all computation costs energy and that your effects here are amplified by the size of the network.
+- Storage and bytecode size are equivalent priorities, but storage is more under your control:
+    - Be dilligent about utilising contract storage variables fully and allocating as little space as possible for dynamic arrays. 
+    - Learn to understand how the Solidity compiler handles your code and build up a library of optimal libraries and algorithms for common tasks. Use Mix or your test framework to compare bytecode sizes for contract generation.
 
 
 ---
@@ -874,7 +891,7 @@ https://github.com/nexusdev/dapple/blob/master/doc/test.md
 
 
 ---
-## Observations:
+# Observations:
 
 - The risks are high with any on-chain language- no software stack to act as padding for bugs.
 - Solidity is a means of direct manipulation of the blockchain database state.
