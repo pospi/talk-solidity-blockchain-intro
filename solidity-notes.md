@@ -51,7 +51,8 @@ layout: true
 background-image: url(./res/leaf.jpg)
 
 <div class="slide-suggestion">
-    <h1>Suggestion</h1>
+    <img class="suggestimg" src="./res/avatar_128x128-4.png" />
+    <h1>Suggestions</h1>
 {{ content }}
 </div>
 
