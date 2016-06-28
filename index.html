@@ -84,6 +84,13 @@
         img { vertical-align: middle; }
         textarea { resize: vertical; }
 
+        li > p:first-child {
+            margin-top: 0;
+        }
+        li > p:last-child {
+            margin-bottom: 0;
+        }
+
         blockquote {
             font-style: italic;
             position: relative;
@@ -97,6 +104,9 @@
             position: absolute;
             left: -0.3em;
             top: -0.1em;
+        }
+        blockquote .remark-code {
+            font-style: normal;
         }
         cite {
             display: block;
