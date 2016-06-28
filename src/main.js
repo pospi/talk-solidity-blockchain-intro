@@ -18,6 +18,9 @@ const remark = new Remark();
 
 const slideshow = remark.create({
     source: pageContent,
+    ratio: '16:9',
+    highlightLanguage: 'javascript',
+    highlightStyle: 'solarized-light',
 });
 
 export default slideshow;
