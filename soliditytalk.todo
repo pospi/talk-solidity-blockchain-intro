@@ -3,13 +3,14 @@ Slide deck:
     ☐ https://github.com/consensys/contract-viewer
     ☐ see if this fixes DAO what went wrong slide layout
  ☐ extract caveats & make clearer
+ ☐ cite quotes
  ☐ maybe make suggestions into labels on other slides instead of takeovers
  ☐ go through todos, work out images & demo code needed:
    ☐ images:
      ☐ ....
    ☐ demo code:
      ☐ ....
- ☐ setup npm script for cloning libraries
+ ☐ setup script for cloning libraries: get-example-libs.sh
 
 
 Research:
@@ -28,6 +29,11 @@ Research:
  - Useful base classes
  - Design patterns
  - Interfacing with IPFS?
+ ☐ benchmark:
+   At what rate does cost increase? In proportion to what?
+   ☐ gas costs for storage manipulation: multiple mods vs single mod vs memory copy mod & replace
+   ☐ gas costs for internal, external & library function calls
+   ☐ gas costs for internal & external self / parent / ancestor / multiparent lookups
 
  ☐ Is it possible, or will it be possible, to bind Solidity types and contract source code to bytecode for debugging purposes, for external contracts someday? or now? can i hack mix?
 
