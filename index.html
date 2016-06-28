@@ -22,6 +22,7 @@
         .remark-slide-content {
             padding: 3em 2.5em 6em 2.5em;
             font-size: 16px;
+            background: #E8E8E8;
         }
         .remark-slide-content h1 { font-size: 2.5000em; line-height: 1.2000; margin-top: 0.9000em; margin-bottom: 0.0000em; }
         .remark-slide-content h2,
@@ -94,14 +95,23 @@
 
         /* Two-column layout */
         .left-column {
-            /*color: #777;*/
+            color: #555;
             width: 20%;
             height: 92%;
             float: left;
         }
-        /*.left-column h2:last-of-type, .left-column h3:last-child {
+        .left-column h2:last-of-type, .left-column h3:last-child {
             color: #000;
-        }*/
+        }
+        .left-column h1,
+        .left-column h2,
+        .left-column h3 {
+            margin: 0;
+        }
+        .left-column h3 {
+            font-size: 1.3em;
+            margin-left: 1em;
+        }
         .right-column {
             width: 75%;
             float: right;
@@ -173,6 +183,9 @@
         }
         .slide-callout a {
             color: white;
+        }
+        .slide-callout .remark-inline-code {
+            background: #002b36;
         }
 
         /************************* END SLIDE VARIANTS *************************/
