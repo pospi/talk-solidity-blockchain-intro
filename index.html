@@ -12,7 +12,7 @@
         /* toplevel typography */
         * { box-sizing: border-box; }
         body { font-family: 'Droid Serif'; }
-        h1, h2, h3 {
+        h1, h2, h3, h4, h5 {
             font-family: 'Yanone Kaffeesatz';
             font-weight: normal;
         }
@@ -34,6 +34,7 @@
 
         /* Remark base display overrides */
         .remark-slide-content {
+            position: relative;
             padding: 3em 2.5em 6em 2.5em;
             font-size: 16px;
             background: #E8E8E8;
@@ -42,7 +43,7 @@
         .remark-slide-content h2,
         .remark-slide-content h3 { font-size: 1.5625em; line-height: 1.9200; margin-top: 1.4300em; margin-bottom: 0.0000em; }
         /* { font-size: 0.8750em; line-height: 1.7143; margin-top: 3.4286em; margin-bottom: 0.0000em; } */
-        .remark-slide-content h4 { font-size: 1.2500em; line-height: 1.2000; margin-top: 1.8000em; margin-bottom: 0.0000em; }
+        .remark-slide-content h4 { font-size: 1.2500em; line-height: 1.2000; margin-top: 0; margin-bottom: 0; }
         .remark-slide-content h5 { font-size: 1.0000em; line-height: 1.5000; margin-top: 2.2500em; margin-bottom: 0.0000em; }
         .remark-slide-content h1:nth-child(2),  /* :NOTE: first-child is the <header> in Remark markdown file */
         .remark-slide-content h2:nth-child(2),
@@ -107,14 +108,22 @@
             margin-right: 0.2em;
         }
 
-        /* Two-column layout */
-        .left-column {
-            color: #555;
-            width: 20%;
-            height: 92%;
-            float: left;
+        /* Two-column sidebar layout */
+        .left-column, .right-column {
+            position: absolute;
+            top: 2em;
+            padding: 3em 2.5em 6em 2.5em;
         }
-        .left-column h2:last-of-type, .left-column h3:last-child {
+        .left-column {
+            padding-right: 0;
+            color: #555;
+            left: 0;
+            width: 22%;
+            height: 92%;
+        }
+        .left-column h2:last-of-type,
+        .left-column h1:last-child,
+        .left-column h3:last-child {
             color: #000;
         }
         .left-column h1,
@@ -127,9 +136,32 @@
             margin-left: 1em;
         }
         .right-column {
-            width: 75%;
-            float: right;
-            padding-top: 1em;
+            left: 22%;
+            width: 78%;
+        }
+
+        /* Controlled column layouts */
+        .col2-left, .col2-right,
+        .col3-left, .col3-mid, .col3-right {
+            float: left;
+            padding: 0 1em;
+        }
+        .col2-left, .col3-left {
+            padding-left: 0;
+        }
+        .col2-right, .col3-right {
+            padding-right: 0;
+        }
+        /* 50/50 two column layout */
+        .col2-left, .col2-right {
+            width: 50%;
+        }
+        /* 33/34/33 three-column layout */
+        .col3-left, .col3-mid, .col3-right {
+            width: 33%;
+        }
+        .col3-mid {
+            width: 34%;
         }
 
         /********************* START SLIDE CLASS MODIFIERS ********************/
