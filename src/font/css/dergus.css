@@ -1,0 +1,86 @@
+@font-face {
+  font-family: 'dergus';
+  src: url('../font/dergus.eot?62444728');
+  src: url('../font/dergus.eot?62444728#iefix') format('embedded-opentype'),
+       url('../font/dergus.woff?62444728') format('woff'),
+       url('../font/dergus.ttf?62444728') format('truetype'),
+       url('../font/dergus.svg?62444728#dergus') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+/* Chrome hack: SVG is rendered more smooth in Windozze. 100% magic, uncomment if you need it. */
+/* Note, that will break hinting! In other OS-es font will be not as sharp as it could be */
+/*
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: 'dergus';
+    src: url('../font/dergus.svg?62444728#dergus') format('svg');
+  }
+}
+*/
+ 
+ [class^="icon-"]:before, [class*=" icon-"]:before {
+  font-family: "dergus";
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+ 
+  display: inline-block;
+  text-decoration: inherit;
+  width: 1em;
+  margin-right: .2em;
+  text-align: center;
+  /* opacity: .8; */
+ 
+  /* For safety - reset parent styles, that can break glyph codes*/
+  font-variant: normal;
+  text-transform: none;
+     
+  /* fix buttons height, for twitter bootstrap */
+  line-height: 1em;
+ 
+  /* Animation center compensation - margins should be symmetric */
+  /* remove if not needed */
+  margin-left: .2em;
+ 
+  /* you can be more comfortable with increased icons size */
+  /* font-size: 120%; */
+ 
+  /* Uncomment for 3D effect */
+  /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
+}
+ 
+.icon-mail:before { content: '\e816'; } /* '' */
+.icon-stackoverflow:before { content: '\e815'; } /* '' */
+.icon-box:before { content: '\e819'; } /* '' */
+.icon-angle-down:before { content: '\e820'; } /* '' */
+.icon-angle-double-up:before { content: '\e821'; } /* '' */
+.icon-angle-double-down:before { content: '\e81f'; } /* '' */
+.icon-fork:before { content: '\e81a'; } /* '' */
+.icon-bitbucket:before { content: '\e80e'; } /* '' */
+.icon-github:before { content: '\e80f'; } /* '' */
+.icon-dot:before { content: '\e812'; } /* '' */
+.icon-dot-2:before { content: '\e813'; } /* '' */
+.icon-dot-3:before { content: '\e814'; } /* '' */
+.icon-twitter:before { content: '\e81c'; } /* '' */
+.icon-facebook:before { content: '\e81b'; } /* '' */
+.icon-gplus:before { content: '\e81d'; } /* '' */
+.icon-flattr:before { content: '\e81e'; } /* '' */
+.icon-paypal:before { content: '\e818'; } /* '' */
+.icon-code:before { content: '\e817'; } /* '' */
+.icon-video:before { content: '\e808'; } /* '' */
+.icon-camera:before { content: '\e809'; } /* '' */
+.icon-link:before { content: '\e803'; } /* '' */
+.icon-pin:before { content: '\e804'; } /* '' */
+.icon-tag-empty:before { content: '\e807'; } /* '' */
+.icon-download:before { content: '\e80d'; } /* '' */
+.icon-quote-left:before { content: '\e80a'; } /* '' */
+.icon-quote-right:before { content: '\e80c'; } /* '' */
+.icon-rss:before { content: '\e80b'; } /* '' */
+.icon-share:before { content: '\e806'; } /* '' */
+.icon-resize-full-alt:before { content: '\e802'; } /* '' */
+.icon-resize-small-alt:before { content: '\e805'; } /* '' */
+.icon-loop:before { content: '\e800'; } /* '' */
+.icon-bitcoin:before { content: '\e811'; } /* '' */
+.icon-linkedin:before { content: '\e810'; } /* '' */
+.icon-search:before { content: '\e801'; } /* '' */
