@@ -11,13 +11,37 @@ layout: true
 
 <footer>
     <ul>
-        <li><strong>pospi</strong></li>
-        <li>pospi@spadgos.com</li>
-        <li>https://twitter.com/pospigos</li>
-        <li>http://pospi.spadgos.com</li>
-        <li>https://github.com/pospi</li>
+        <li><img src="./img/avatar_128x128-4.png" /><strong>pospi</strong></li>
+        <li><i class="icon-link"></i> http://pospi.spadgos.com</li>
+        <li><i class="icon-github"></i> https://github.com/pospi</li>
+        <li><i class="icon-mail"></i> pospi@spadgos.com</li>
+        <li><i class="icon-twitter"></i> https://twitter.com/pospigos</li>
     </ul>
 </footer>
+
+---
+name: start
+layout: true
+
+<div class="slide-start">
+    {{ content }}
+    <ul>
+        <li><strong>pospi</strong></li>
+        <li><i class="icon-link"></i> http://pospi.spadgos.com</li>
+        <li><i class="icon-mail"></i> pospi@spadgos.com</li>
+        <li><i class="icon-github"></i> https://github.com/pospi</li>
+        <li><i class="icon-twitter"></i> https://twitter.com/pospigos</li>
+    </ul>
+</div>
+
+---
+name: callout
+template: base
+layout: true
+
+<div class="slide-callout">
+{{ content }}
+</div>
 
 ---
 name: suggestion
