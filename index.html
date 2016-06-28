@@ -41,7 +41,7 @@
         }
         .remark-inline-code {
             /* note: match solarized */
-            color: #839496;
+            color: #657b83;
             /*background: #002b36;*/
             background: #fdf6e3;
             padding: 0.1em 0.3em;
@@ -61,6 +61,29 @@
         img { vertical-align: middle; }
         textarea { resize: vertical; }
 
+        blockquote {
+            font-style: italic;
+            position: relative;
+            padding: 0.1em 0 0 3em;
+            color: #676767;
+        }
+        blockquote:before {
+            content: "\201C";
+            font-family: Georgia, Times, 'Times New Roman', serif;
+            font-size: 6em;
+            position: absolute;
+            left: -0.3em;
+            top: -0.1em;
+        }
+        cite {
+            display: block;
+            font-style: normal;
+        }
+        cite:before {
+            content: "\2014";
+            font-size: 1.5em;
+            margin-right: 0.2em;
+        }
 
         /* Two-column layout */
         .left-column {
