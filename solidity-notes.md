@@ -61,7 +61,6 @@ template: base
 layout: true
 
 ---
-
 template: start
 
 
@@ -77,6 +76,7 @@ template: start
 ---
 # Agenda
 
+.threecol[
 <!-- MarkdownTOC -->
 
 - [Same concepts, different environment](#same-concepts-different-environment)
@@ -84,6 +84,7 @@ template: start
 - [Words of caution](#words-of-caution)
 - [Best places to get started](#best-places-to-get-started)
 - [Micro-optimisations are important](#micro-optimisations-are-important)
+    - [Quantifying 'efficiency'](#quantifying-efficiency)
 - [Types](#types)
     - [Value types](#value-types)
     - [Reference types](#reference-types)
@@ -123,10 +124,10 @@ template: start
 - [Function libraries](#function-libraries)
 - [Some real stats: quicksort vs. heapsort](#some-real-stats-quicksort-vs-heapsort)
 - [Build toolchain](#build-toolchain)
-    - [Observations:](#observations)
+- [Observations:](#observations)
 
 <!-- /MarkdownTOC -->
-
+]
 
 
 
