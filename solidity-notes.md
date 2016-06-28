@@ -38,8 +38,8 @@ background-image: url(./res/leaf.jpg)
 
 ---
 name: callout
-template: base
 layout: true
+background-image: url(./res/leaf.jpg)
 
 <div class="slide-callout">
 {{ content }}
@@ -47,8 +47,8 @@ layout: true
 
 ---
 name: suggestion
-template: base
 layout: true
+background-image: url(./res/leaf.jpg)
 
 <div class="slide-suggestion">
     <h1>Suggestion</h1>
@@ -77,25 +77,25 @@ template: start
 # Agenda
 
 .threecol[
-<!-- MarkdownTOC -->
+<!-- 
+    :IMPORTANT: 
+    -> First two header levels are indexed, and must have `name` properties added to their slides.
+    -> Other header levels can be used as internal headings within slides.
+    -> H2 and H3 look the same
+    -> We can declare repeated first and second-level headers by using HTML without MarkdownTOC 
+       generating extra entries.
+-->
+<!-- MarkdownTOC depth=2 -->
 
 - [Same concepts, different environment](#same-concepts-different-environment)
 - [Solidity is not the end-all](#solidity-is-not-the-end-all)
 - [Words of caution](#words-of-caution)
 - [Best places to get started](#best-places-to-get-started)
 - [Micro-optimisations are important](#micro-optimisations-are-important)
-    - [Quantifying 'efficiency'](#quantifying-efficiency)
 - [Types](#types)
     - [Value types](#value-types)
     - [Reference types](#reference-types)
-        - [Data location](#data-location)
-        - [Byte arrays](#byte-arrays)
-        - [Reference arrays](#reference-arrays)
-            - [Caveats](#caveats)
-        - [Complex types](#complex-types)
     - [Addresses](#addresses)
-        - [attributes](#attributes)
-        - [methods](#methods)
 - [Control flow & syntax](#control-flow--syntax)
 - [Function modifiers](#function-modifiers)
 - [Contract structure](#contract-structure)
@@ -106,11 +106,6 @@ template: start
 - [What are contract events for?](#what-are-contract-events-for)
     - [Event interface](#event-interface)
 - [Code best-practises](#code-best-practises)
-        - [Iteration vs recursion](#iteration-vs-recursion)
-        - [Mapping vs. Array](#mapping-vs-array)
-        - [Composition or inheritance](#composition-or-inheritance)
-        - [Delegates](#delegates)
-        - [Misc gotchas](#misc-gotchas)
 - [Inline assembly](#inline-assembly)
 - [TheDAO hack: what went wrong?](#thedao-hack-what-went-wrong)
     - [Short version](#short-version)
@@ -131,13 +126,10 @@ template: start
 
 
 
-<!-- ---------------------------------------------------------------------------
-PART 1: PERFORMANCE
---------------------------------------------------------------------------- -->
-
 
 
 ---
+name: same-concepts-different-environment
 # Same concepts, different environment
 
 Solidity should be thought of as a *systems programming language*. Though syntactically similar to JavaScript, it is much more like C++ in terms of its structure and ways of handling data & memory.
@@ -155,10 +147,14 @@ Solidity should be thought of as a *systems programming language*. Though syntac
 
 RAM & hard disk are combined since Ethereum's execution *as a program* and its blockchain storage *as state* are fused into the same thing. As we'll soon see, "reading a file" is no longer a task we need be concerned with.
 
-**Ethereum is a low-level system**. Think of it like programming for an Onion Omega or Raspberry Pi. Resources are extremely scarce. There isn't even a floating point unit (yet!).
+**Ethereum is a low-level system**. Think of it like programming for an Arduino board, Onion Omega or Raspberry Pi. Resources are extremely scarce. There isn't even a floating point unit (yet!).
+
+
+
 
 
 ---
+name: solidity-is-not-the-end-all
 # Solidity is not the end-all
 
 Serpent and LLL can also be written, and likely more efficiently (LLL in particular). Try them all out in-browser!
@@ -172,7 +168,11 @@ Solidity is also arguably not very well suited to the task &mdash; see The Great
 
 
 
+
+
+
 ---
+name: words-of-caution
 # Words of caution
 
 > Do not develop Solidity contracts without a reasonable grasp of the underlying Ethereum Virtual Machine execution model, particularly around gas costs.
@@ -184,7 +184,12 @@ Statements like this should give us *all* pause for thought here. But please, do
 <!-- :TODO: stuff about buffer of a larger system between user input and storage -->
 
 
+
+
+
+
 ---
+name: best-places-to-get-started
 # Best places to get started
 
 - http://solidity.readthedocs.io/ (most complete reference material I could find)
@@ -193,7 +198,13 @@ Statements like this should give us *all* pause for thought here. But please, do
 
 
 
+
+
+
+
+
 ---
+name: micro-optimisations-are-important
 # Micro-optimisations are important
 
 Pre-increment vs. post-increment, `for` vs `foreach`, references vs. copies: all those arguments we gave up on years ago are back and more important than ever. Why?
@@ -212,27 +223,48 @@ Pre-increment vs. post-increment, `for` vs `foreach`, references vs. copies: all
     </li>
 </ul>
 
-## Quantifying 'efficiency'
+### Quantifying 'efficiency'
 
-Three metrics: wei cost, storage size & bytecode size.
+Three metrics: gas cost (in `wei`), reserved storage size (in `bytes`) & bytecode size (also measurable in `bytes`). Note that contract storage is statically allocated *once* at the time you deploy a contract and its size never changes thereafter, so some interfaces may give you back a single value for *'contract size'* at the time of compilation.
+
+
+
 
 
 ---
 template: suggestion
 
-Place these things in the order given in terms of priority. Note that performance (in terms of speed) should **not** be a concern to you. *"CPU-intensive"* in this environment means on the order of sorting an array of more than 50 elements&mdash; not much horsepower at all!
+***Relative importance: gas cost > storage size > bytecode size.***
+
+In general, you will want to prioritise architectural decisions in that order. Note that performance (in terms of speed) should **not** be a concern to you. *"CPU-intensive"* in this environment means on the order of sorting an array of more than 50 elements&mdash; not much horsepower at all!
  
 CPU-intensive operations like sorting large arrays should be placed off-chain and run by a trusted party. Note also that the results of such computations are easily auditable by running parallel off-chain proofing servers to verify the primary server's on-chain output/input.
 
-- Prioritise the gas cost of interacting with your contracts above all else. Heresay statistics have claimed that a single bitcoin transaction causes as much CO<sub>2</sub> pollution as keeping a car on the road for *3 days*. Remember that all computation costs energy and that your effects here are amplified by the size of the network.
+- Prioritise the gas cost of interacting with your contracts above all else. Some statisticians have claimed that a single bitcoin transaction causes as much CO<sub>2</sub> pollution as keeping a car on the road for *3 days*. Remember that all computation costs energy and that your effects here are amplified by the size of the network.
 - Storage and bytecode size are equivalent priorities, but storage is more under your control:
     - Be dilligent about utilising contract storage variables fully and allocating as little space as possible for dynamic arrays. 
     - Learn to understand how the Solidity compiler handles your code and build up a library of optimal libraries and algorithms for common tasks. Use Mix or your test framework to compare bytecode sizes for contract generation.
 
 
+
+
+
+
 ---
-.left-column[
+name: types
+template: callout
 # Types
+
+Solidity has the usual memory-centric datatypes we're used to seeing in low-level languages, with some modern conveniences baked in to the compiler...
+
+
+
+
+
+---
+name: value-types
+.left-column[
+<h1>Types</h1>
 ## Value types
 ]
 .right-column[
@@ -253,9 +285,18 @@ CPU-intensive operations like sorting large arrays should be placed off-chain an
 ]
 
 
----
-## Reference types
 
+
+---
+name: reference-types
+
+
+.left-column[
+<h1>Types</h1>
+<h2>Value types</h2>
+## Reference types
+]
+.right-column[
 
 ### Data location
 
@@ -275,6 +316,9 @@ You can declare local variables within functions which reference storage variabl
 There is no OO-like 'static' in the sense of shared memory space on the class that is accessible by all instances of an object. To achieve such an outcome, one would need to deploy a separate shared storage contract to the blockchain and reference its address onto each of your own compiled contracts.
 
 Deleting state variables can be done with the `delete` operator. Note however that since *contract storage is statically assigned at the time of contract creation*, there is really no such thing as "delete". What the operator really does is set the value to the initial value for the type, ie. `x = 0` for integers. <!-- :TODO: can you run `delete` on local variables referencing storage? Compiler error or no-op? -->
+
+]
+
 
 
 ---
