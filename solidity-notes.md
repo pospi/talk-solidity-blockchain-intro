@@ -102,8 +102,6 @@ template: start
         - [Data location](#data-location)
         - [Handling Data location](#handling-data-location)
     - [Arrays](#arrays)
-        - [Byte arrays](#byte-arrays)
-        - [Reference arrays](#reference-arrays)
         - [Using arrays](#using-arrays)
         - [Array caveats](#array-caveats)
     - [Other reference types](#other-reference-types)
@@ -299,8 +297,6 @@ name: types
 .right-column[
 
 Solidity has the usual memory-centric datatypes we're used to seeing in low-level languages, with some modern conveniences baked in to the compiler.
-
-Its reference types take on an additional attribute in their *"context"*- defined as either `storage` or `memory`. This language keyword is all that is needed to differentiate between persistent data stored on-chain and transient data used during intermediate computations.
 ]
 
 ???
@@ -343,6 +339,7 @@ name: value-types
 
 
 ---
+name: constants
 .left-column[
 <h1>Types</h1>
 <h2>Value types</h2>
@@ -365,6 +362,8 @@ contract C {
 
 
 
+
+
 ---
 name: reference-types
 .left-column[
@@ -375,6 +374,17 @@ name: reference-types
 ]
 .right-column[
 
+Solidity's reference types take on an additional attribute in their *"context"*- defined as either `storage` or `memory`. This language keyword is all that is needed to differentiate between persistent data stored on-chain and transient data used during intermediate computations.
+]
+
+
+
+
+
+
+
+---
+name: data-location
 ### Data location
 
 For reference types, we have to think about whether the data they reference is only kept in `memory` while the EVM is running this execution cycle, or if they should persist to `storage`. If you continue to think of contracts the same as classes, then these semantics should follow:
@@ -398,6 +408,7 @@ For reference types, we have to think about whether the data they reference is o
 
 
 ---
+name: handling-data-location
 .left-column[
 <h1>Types</h1>
 <h2>Value types</h2>
@@ -436,13 +447,13 @@ name: arrays
 ]
 .right-column[
 
-### Byte arrays
+#### Byte arrays
 
 - variable byte arrays: `bytes`
 - strings (character arrays): `string` (like `bytes`, but respects encoding rules)
     - note string literals will be encoded as `bytes` where possible
 
-### Reference arrays
+#### Reference arrays
 
 - fixed-length: 
     - Type[Size] eg. `byte[4]`
@@ -460,6 +471,7 @@ name: arrays
 
 
 ---
+name: using-arrays
 .left-column[
 <h1>Types</h1>
 <h2>Value types</h2>
@@ -487,6 +499,7 @@ Arrays and `bytes` both have a `length` member and a `push` method that most wil
 
 
 ---
+name: array-caveats
 .left-column[
 <h1>Types</h1>
 <h2>Value types</h2>
@@ -595,6 +608,7 @@ The `address` type identifies an account (human or contract). It:
 
 
 ---
+name: address-methods
 .left-column[
 <h1>Types</h1>
 <h2>Value types</h2>
@@ -613,7 +627,7 @@ All these members of the `address` type are made available by the compiler for y
 - `send(val)` (send `val` wei to address, returns `false` on failure)  
     - The transfer fails if the call stack depth limit is exceeded, or the recipient runs out of gas.
     - The contract's *fallback function* is called.
-        - This is a function with no name declared within the contract. It handles the condition when someone sends ether to the contract but doesn't do anything else. Since this is generally the result of user error, you should most often provide this function as `function() { throw; }`.
+        - This is a function with no name declared within the contract. It handles the condition when someone sends ether to the contract but doesn't do anything else. Since this is generally the result of user error, you should most often *(**but not always**)* provide this function as `function() { throw; }`.
 - `call` & `delegatecall`
     - For calling other contracts which you don't yourself own or interacting with library contracts (to be discussed soon!)
     - Works like JavaScript's `call` method, kinda like calling a function by its name.
@@ -634,6 +648,7 @@ All these members of the `address` type are made available by the compiler for y
 
 
 ---
+name: address-magic
 .left-column[
 <h1>Types</h1>
 <h2>Value types</h2>
@@ -900,6 +915,7 @@ As mentioned, the EVM has many languages which compile down to its CPU bytecode.
 
 
 ---
+name: reference-types-and-contract-interfaces
 .left-column[
 <h1>Control flow & syntax</h1>
 <h2>Interpreter caveats</h2>
@@ -1065,6 +1081,7 @@ Consider the following situation:
 
 
 ---
+name: event-interface
 .left-column[
 <h1>Control flow & syntax</h1>
 <h2>Interpreter caveats</h2>
@@ -1103,6 +1120,7 @@ Basically events are ways of easily exposing data to external callers. The block
 
 
 ---
+name: event-interface-cotd
 .left-column[
 <h1>Control flow & syntax</h1>
 <h2>Interpreter caveats</h2>
@@ -1329,7 +1347,7 @@ Redeploying at the same address is impossible.
 ???
 :TODO: examples of classes needed
 
-
+:TODO: investigate function pointers further.. this is a thing for toggling behaviour!
 
 
 
@@ -1385,11 +1403,16 @@ name: some-real-stats-quicksort-vs-heapsort
 name: misc-gotchas
 # Misc gotchas
 
+You can consider all of these a .caveat[]...
+
 - Always call local methods in aliased form, ie. call `f()`, not `this.f()`. The former is faster as it allows pass-by-reference- _once you call between contracts, data must be copied by value_.
 - Never use `now` or `block.hash` as a source of randomness, unless you know what you are doing!
 - `now` is the time of the last block, not *really* the exact current time.
 - The constructor is removed from the contract code once it is deployed since it is only ever executed once. As such, it can't be called directly.
+- `for (var i = 0; i < arrayName.length; i++) { ... }` will runaway if your array holds more than 256 elements, because `uint8` is the smallest available datatype to hold a 0 and the variable will overflow infinitely.
+- You can rely on methods being called with 2300 gas, as this is the current transaction stipend. Don't presume you'll always be allocated enough to access storage.
 
+Further reading: http://solidity.readthedocs.io/en/latest/miscellaneous.html#pitfalls
 
 
 
@@ -1493,7 +1516,7 @@ name: guidelines-to-avoid-this-pitfall
 - If these interactions fail, handle the effect in a way which **does not interfere** with any other address being processed.
 - Presume any methods in your contract other than `internal` and `private` ones will be called by contracts other than those you expect.
 - Also never presume that an address === a user. An address does not guarantee a real person.
-- Use `send` instead of `call` wherever possible.
+- Use `send` instead of `call` wherever possible. Even then, ensure you handle failures correctly, and again, update your contract's own state **first**.
 - Presume any call to an externally accessible contract method you define may run out of gas and fail.
 
 ???
