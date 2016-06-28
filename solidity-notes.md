@@ -4,7 +4,7 @@ name: base
 <!-- Remark base template -->
 
 <header>
-    <h6>Solidity &amp; Systems Programming on the Blockchain</h6>
+    <h6>Solidity &amp; Systems Programming on the Blockchain <span style="float: right;">13 Jul 2016</span></h6>
 </header>
 
 {{ content }}
