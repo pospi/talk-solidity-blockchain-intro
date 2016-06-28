@@ -120,7 +120,11 @@ Solidity is also arguably not very well suited to the task &mdash; see The Great
 
 > Do not develop Solidity contracts without a reasonable grasp of the underlying Ethereum Virtual Machine execution model, particularly around gas costs.
 >
-> &mdash; <cite>http://vessenes.com/ethereum-griefing-wallets-send-w-throw-considered-harmful/</cite>
+> <cite>http://www.kingoftheether.com/postmortem.html</cite>
+
+Statements like this should give us *all* pause for thought here. But please, don't let this dissuade you from experimenting! The only way to learn is to tinker and reflect&mdash; that's what the testnet and the community are for.
+
+<!-- :TODO: stuff about buffer of a larger system between user input and storage -->
 
 
 ---
@@ -239,7 +243,6 @@ Arrays and `bytes` both have a `length` member and a `push` method that most wil
 - The max call stack size is 1024. *(Be sure to correctly handle the return value of `send`!)*  
   http://hackingdistributed.com/2016/06/16/scanning-live-ethereum-contracts-for-bugs/
   http://vessenes.com/ethereum-griefing-wallets-send-w-throw-considered-harmful/
-  > Do not develop Solidity contracts without a reasonable grasp of the underlying Ethereum Virtual Machine execution model, particularly around gas costs. 
 - manage your internal contract's state BEFORE calling other contracts. If they fail it's then THEIR problem, not yours.
 - ALWAYS specify a gas amount when calling other contracts (which prevents them being attackable by sending any amount of gas)
 
