@@ -270,7 +270,7 @@ Three metrics: gas cost (in `wei`), reserved storage size (in `bytes`) & bytecod
 
 In general, you will want to prioritise architectural decisions in this order. Note that performance (in terms of speed) should **not** be a concern to you. *"CPU-intensive"* in this environment means on the order of sorting an array of more than 50 elements&mdash; not much horsepower at all!
 
-- Prioritise the gas cost of interacting with your contracts above all else. Some statisticians have claimed that a single bitcoin transaction causes as much CO<sub>2</sub> pollution as keeping a car on the road for *3 days*. Remember that all computation costs energy and that your effects here are amplified by the size of the network.
+- Prioritise the gas cost of interacting with your contracts above all else. Some statisticians have claimed that a single bitcoin transaction causes as much CO<sub>2</sub> pollution as keeping a car on the road for *3 days*. Remember that all computation costs energy and that your effects here are amplified drastically by the size of the network.
 - Storage and bytecode size are equivalent priorities, but storage is more under your control:
     - Be dilligent about utilising contract storage variables fully and allocating as little space as possible for dynamic arrays. 
     - Learn to understand how the Solidity compiler handles your code and build up a library of optimal libraries and algorithms for common tasks. Use Mix or your test framework to compare bytecode sizes for contract generation.
@@ -325,12 +325,13 @@ name: value-types
     - uses 1 byte for storage
 - fixed byte arrays: `byte`/`bytes1`..`bytes32`
     - actually these are just different ways of talking about integers (256 bits === 32 bytes; `bytes32` is really just `uint256` by a different name).
-    - assignment must be done with bitwise operators currently; eg. `byteArr |= newVal << (newIdx * 8)` to set the `newIdx`th value to `newVal`. 
+    - assignment must be done with bitwise operators currently; eg. `byteArr |= newVal << (newIdx << 3)` to set the `newIdx`th value to `newVal`. 
     - has a `length` attribute
 - No floats, but fixed-point math is built in to the syntax
     - see `ufixed8x248`, `ufixed128x128` and similar types- 
     - FPU "coming soon". I wouldn't be surprised if this does not come until Ethereum 2.0 (proof of stake). If a Nintendo DS is too low-powered for one, then the EVM *definitely* is.
 - enums (c-like, stored as smallest possible `int` type)
+    - When passed over the ABI, will be coerced: given `enum ActionState { Started, Stopped }`, `StartAction == 0` etc
 - time units and ether units can all be entered literally for convenience and are interpreted as the base type (`wei` and `second`). `2 ether == 2000 finney`, `1 minutes == 60 seconds` etc. Note that all arithmetic uses ideal time and does not account for timezones, leap seconds or otherwise.
 ]
 
@@ -532,12 +533,6 @@ Are defined with type syntax eg. `mapping (uint => address) myAddressList;`
 
 - are hashes which allow pretty much any value other than another mapping as keys.
 - **are only allowed for state variables** (or as storage reference types in internal functions).
-
-#### enums:
-
-For convenience, eg. `enum ActionChoices { GoLeft, GoRight, GoStraight, SitStill }`
-
-- When passed over the ABI, will be coerced: `GoLeft == 0` etc
 
 #### structs: 
 
@@ -887,7 +882,8 @@ name: contracts-calling-contracts
 
 As mentioned, the EVM has many languages which compile down to its CPU bytecode. As such, there is a lower-level API available between contracts with a more restricted set of datatypes (known as the *Contract ABI* or *"Application Binary Interface"*) which must be used when calling between them (Serpent doesn't know about the types of data structures Solidity supports, for example). This also applies even when calling a contract's own methods via the `this` pointer.
 
-.caveat[Method access can operate very differently]
+.caveat[Method access operates very differently depending on the calling context.]  
+.caveat[External function call stack depth is hard-limited to 1024 calls.]
 
 - Internal function calls are extremely cheap and implemented as `JUMP` inside the EVM, so no memory is cleared.
 - External function calls (`send`, `call`, calling via `this` and calling library methods) contribute to stack depth and cannot recurse in excess of an artificial stack depth limit of 1024.
@@ -1667,7 +1663,7 @@ List to come...
 - really don't want to have to do `MajoritySplittable` etc, am I doing it wrong?
 - thinking conventions... 'owner'/'purchase'/'calc' for things involving $!
 - registrar: see `dapp-bin/registry`
-
+- helpers for managing common default function & suicide behaviours
 
 
 
