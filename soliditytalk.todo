@@ -14,26 +14,24 @@ Slide deck:
 
 
 Research:
- ☐ get dapple setup and see how unit testing operates
- - Test how fixed point rounding works
  - Unit testing framework that outputs useful benchmarking data:
      - [confirm the following assumptions](http://ethereum.stackexchange.com/q/5957/2665):
      - gas cost (indicator of computational complexity / electrical cost; estimated and actual)
      - memory & storage usage (indicator of long-term storage efficiency)
      - See if sol-unit / sunit is runnable and try to plug something in to it
+ ☐ get dapple setup and see how unit testing operates
  - Benchmark various techniques to work out what's best
-     - Understand inheritance: concatenative or delegative?
-     - is `delegatecall` really as awesome as it seems to be?
+   At what rate does gas cost increase? In proportion to what?
+   ☐ gas costs for storage manipulation: multiple mods vs single mod vs memory copy mod & replace
+   ☐ gas costs for internal, external & library function calls
+   ☐ gas costs for internal & external self / parent / ancestor / multiparent lookups
+   - Understand inheritance: concatenative or delegative?
+ - Test how fixed point rounding works
  - ABI encoders / decoders
  - ADTs along the lines of the C STL
  - Useful base classes
  - Design patterns
  - Interfacing with IPFS?
- ☐ benchmark:
-   At what rate does cost increase? In proportion to what?
-   ☐ gas costs for storage manipulation: multiple mods vs single mod vs memory copy mod & replace
-   ☐ gas costs for internal, external & library function calls
-   ☐ gas costs for internal & external self / parent / ancestor / multiparent lookups
 
  ☐ Is it possible, or will it be possible, to bind Solidity types and contract source code to bytecode for debugging purposes, for external contracts someday? or now? can i hack mix?
 
