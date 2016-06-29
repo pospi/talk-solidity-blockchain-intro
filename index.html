@@ -94,7 +94,7 @@
         blockquote {
             font-style: italic;
             position: relative;
-            padding: 0.1em 0 0.1em 2.4em;
+            padding: 0 0 0 2.4em;
             color: #676767;
         }
         blockquote:before {
@@ -192,17 +192,28 @@
             column-count: 3;
         }
 
-        .caveat {
-            color: #830F0C;
-            border-bottom: 1px solid #830F0C;
-        }
-        .caveat:before {
+        .caveat:before,
+        .suggestion:before {
             content: 'caveat:';
             font-weight: bold;
             margin-right: 0.5em;
             padding: 0 0.2em;
             background: #A31F1C;
             color: white;
+        }
+        .caveat {
+            color: #830F0C;
+            border-bottom: 1px solid #830F0C;
+        }
+        .suggestion {
+            color: #0F6718;
+            border-bottom: 1px solid #0F6718;
+        }
+        .suggestion:before {
+            content: 'suggestion:';
+            font-style: italic;
+            font-weight: normal;
+            background: #0F6718;
         }
 
         /************************* START SLIDE VARIANTS ***********************/
@@ -224,38 +235,9 @@
 
         /*------------------------------*/
 
-        .slide-callout,
-        .slide-suggestion {
+        .slide-callout {
             position: absolute;
             padding: 3em;
-        }
-
-        .slide-suggestion {
-            top: 2em;
-            bottom: 4em;
-            left: 0;
-            right: 0;
-            background: #EAEAEA;
-        }
-        .slide-suggestion h1 {
-            color: #6F0C83;
-        }
-
-        .suggestimg {
-            display: block;
-            position: relative;
-            width: 3em;
-            height: 0;
-            overflow: visible;
-            margin: -1em -0.5em 0 -2.5em;
-        }
-        .suggestimg img {
-            width: 100%;
-        }
-
-        /*------------------------------*/
-
-        .slide-callout {
             top: 2em;
             bottom: 2em;
             left: 3em;
