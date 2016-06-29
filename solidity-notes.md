@@ -46,17 +46,6 @@ background-image: url(./res/leaf.jpg)
 </div>
 
 ---
-name: suggestion
-template: base
-layout: true
-background-image: url(./res/leaf.jpg)
-
-<div class="slide-suggestion">
-    <h1>Suggestions&hellip;</h1>
-{{ content }}
-</div>
-
----
 name: default
 template: base
 layout: true
@@ -72,7 +61,7 @@ template: start
 
 # Solidity & Systems Programming on the Blockchain
 
-
+### A knowledge remix
 
 ---
 # Agenda
@@ -115,6 +104,7 @@ template: start
     - [Method visibility](#method-visibility)
     - [Contracts calling contracts](#contracts-calling-contracts)
         - [Reference types and contract interfaces](#reference-types-and-contract-interfaces)
+    - [Contracts creating contracts](#contracts-creating-contracts)
     - [Library code](#library-code)
         - [Libraries as datatypes](#libraries-as-datatypes)
     - [What are contract events?](#what-are-contract-events)
@@ -143,6 +133,10 @@ template: start
 <!-- /MarkdownTOC -->
 ]
 
+???
+
+- Mention the whole "caveat" and "suggestion" label thing
+
 
 
 
@@ -154,6 +148,8 @@ name: same-concepts-different-environment
 
 Solidity should be thought of as a *systems programming language*. Though syntactically similar to JavaScript, it is much more like C++ in terms of its structure and ways of handling data & memory.
 
+**Ethereum is a low-level system**. Think of it like programming for an Arduino board, Onion Omega or Raspberry Pi. Resources are extremely scarce.
+
 - Ethereum blockchain ~= RAM ~= Hard Drive
 - Ethereum Virtual Machine (EVM) ~= Java Virtual Machine (JVM) ~= x86 CPU
 - Contract bytecode ~= Java Bytecode ~= x86 bytecode
@@ -163,9 +159,7 @@ Solidity should be thought of as a *systems programming language*. Though syntac
 - Deployed contracts ~= Objects
 - Deployed contract address ~= memory address ~= file inode
 
-RAM & hard disk are combined since Ethereum's execution *as a program* and its blockchain storage *as state* are fused into the same thing. As we'll soon see, "reading a file" is no longer a task we need be concerned with.
-
-**Ethereum is a low-level system**. Think of it like programming for an Arduino board, Onion Omega or Raspberry Pi. Resources are extremely scarce. There isn't even a floating point unit (yet!).
+Note that RAM & hard disk are combined since Ethereum's execution *as a program* and its blockchain storage *as state* are fused into the same thing. As we'll soon see, "reading a file" is no longer a task we need be concerned with.
 
 ???
 
@@ -187,7 +181,7 @@ Serpent and LLL can also be written, and likely more efficiently (LLL in particu
 
 All compile to EVM bytecode. Solidity was not the first EVM-compiled language, and it will not be the last.
 
-Solidity is also arguably not very well suited to the task &mdash; see The Great DAO Hack! We'll come back to this later...
+...and it may not be the best tool for the job&mdash; see *"The Great DAO Hack"*! We'll come back to this later...
 
 
 
@@ -198,11 +192,28 @@ Solidity is also arguably not very well suited to the task &mdash; see The Great
 name: words-of-caution
 # Words of caution
 
+I'll try not to pick on JavaScript developers too much (I'm one of them!); but&mdash;
+
 > Do not develop Solidity contracts without a reasonable grasp of the underlying Ethereum Virtual Machine execution model, particularly around gas costs.
 >
 > <cite>http://www.kingoftheether.com/postmortem.html</cite>
 
 Statements like this should give us *all* pause for thought here. But please, don't let this dissuade you from experimenting! The only way to learn is to tinker and reflect&mdash; that's what the testnet and the community are for.
+
+```js
+function learnSmartContractDevWhenReady(dev, startLearningSolidity) {
+    const languagesLearned = dev.getLanguagesLearned();
+
+    if (['JavaScript', 'C', 'C++', 'C#', 'Java', 'Go', 'Rust', 'OCaml', 'Ada', 'Pascal']
+      .filter(lang => languagesLearned.includes(lang)).length >= 2) {
+        return startLearningSolidity(dev);
+    }
+
+    setTimeout(() => {
+        learnSmartContractDevWhenReady(dev, startLearningSolidity);
+    }, 1000 * 60 * 60 * 24 * 30);
+}
+```
 
 ???
 
@@ -281,7 +292,7 @@ In general, you will want to prioritise architectural decisions in this order. N
 name: a-blockchain-is-not-always-the-answer
 # A blockchain is not always the answer
  
-CPU-intensive operations like sorting large arrays should be placed off-chain and run by a trusted party. Note also that the results of such computations are easily auditable by running parallel off-chain proofing servers to verify the primary server's on-chain output/input, and can be easily managed via `Owned` contract base classes and `OwnerOnly` function modifiers (to be examined later).
+CPU-intensive operations like sorting large arrays should be placed off-chain and run by a trusted party. Note also that the results of such computations are easily auditable by running parallel off-chain proofing servers to verify the primary server's on-chain output/input, and can be easily managed via `Owned` contract base classes and `ownerOnly` function modifiers (to be examined later).
 
 
 
@@ -328,7 +339,8 @@ name: value-types
     - FPU "coming soon". I wouldn't be surprised if this does not come until Ethereum 2.0 (proof of stake). If a Nintendo DS is too low-powered for one, then the EVM *definitely* is.
 - enums (c-like, stored as smallest possible `int` type)
     - When passed over the ABI, will be coerced: given `enum ActionState { Started, Stopped }`, `StartAction == 0` etc
-- time units and ether units can all be entered literally for convenience and are interpreted as the base type (`wei` and `second`). `2 ether == 2000 finney`, `1 minutes == 60 seconds` etc. Note that all arithmetic uses ideal time and does not account for timezones, leap seconds or otherwise.
+- time units and ether units can all be entered literally for convenience and are interpreted as the base type (`wei` and `second`). `2 ether == 2000 finney`, `1 minutes == 60 seconds` etc. Note that all arithmetic uses ideal time and does not account for timezones, leap seconds or otherwise.  
+  .suggestion[Always specify these units when performing time calculations or value transactions for clarity.]
 ]
 
 ???
@@ -494,6 +506,41 @@ Arrays are declared as above, instantiated with the `new` keyword: `uint[] memor
 
 Arrays and `bytes` both have a `length` member and a `push` method that most will be familiar with.
 ]
+
+
+
+
+
+
+---
+name: using-arrays
+.left-column[
+<h1>Types</h1>
+<h2>Value types</h2>
+<h3>Constants</h3>
+<h2>Reference types</h2>
+<h2>Arrays</h2>
+]
+.right-column[
+
+<h3>Using arrays</h3>
+
+You can't make arrays all that large in practise:
+
+> Note that filling a 10x10 square of `uint8` + contract creation took more than 800,000 gas at the time of this writing. 17x17 took 2,000,000 gas. With the limit at 3.14 million... well, there’s a pretty low ceiling for what you can create right now.
+>
+> Note that merely “creating” the array is free, the costs are in filling it.
+>
+> <cite>http://solidity.readthedocs.io/en/latest/frequently-asked-questions.html</cite>
+
+.caveat[A dynamic array will create a separate storage slot for every element.] This is usually a waste of space unless every element has 256 bits of data in it&mdash; use fixed-width arrays wherever possible.
+
+.suggestion[Use larger types and bitwise math to pack smaller values in arrays to conserve storage slots.]
+
+]
+
+???
+:TODO: check these array storage padding things
 
 
 
@@ -676,6 +723,22 @@ nameReg.send(4 ether);
 ```
 
 This is extremely handy when it comes to contracts calling contracts...
+
+Another convenience is the `value` and `gas` methods of all external function references. These can be used to set the values sent with external function calls / transactions:
+
+```
+contract InfoFeed {
+    function info() returns (uint ret) { return 42; }
+}
+
+contract Consumer {
+    InfoFeed feed;
+    function setFeed(address addr) { feed = InfoFeed(addr); }
+    function callFeed() { feed.info.value(1 ether).gas(800 wei)(); }
+}
+```
+
+Note the chained method calls only set the values, and it's not until the final set of braces are executed that the external method runs. This is conceptually similar to using `.call()` and `.apply()` in JavaScript.
 ]
 
 
@@ -909,11 +972,14 @@ name: contracts-calling-contracts
 
 As mentioned, the EVM has many languages which compile down to its CPU bytecode. As such, there is a lower-level API available between contracts with a more restricted set of datatypes (known as the *Contract ABI* or *"Application Binary Interface"*) which must be used when calling between them (Serpent doesn't know about the types of data structures Solidity supports, for example). This also applies even when calling a contract's own methods via the `this` pointer.
 
-.caveat[Method access operates very differently depending on the calling context.]  
-.caveat[External function call stack depth is hard-limited to 1024 calls.]
+.caveat[Method access operates very differently depending on the calling context.]
 
-- Internal function calls are extremely cheap and implemented as `JUMP` inside the EVM, so no memory is cleared.
-- External function calls (`send`, `call`, calling via `this` and calling library methods) contribute to stack depth and cannot recurse in excess of an artificial stack depth limit of 1024.
+- Internal function calls are extremely cheap and implemented as `JUMP` inside the EVM, so no memory is cleared. They also don't contribute to stack depth.
+- External function calls (`send`, `call`, calling via `this` and calling library methods) happen across the boundaries between contracts.
+- .caveat[There is an artificial limit of 1024 on stack depth for external function calls.]
+- External function calls happen at the ABI level and so can only handle fundamental data types. Any complex data you wish to pass between functions must include encoding / decoding logic.
+- .caveat[Data passed through all external method calls is copied by value.]
+
 ]
 
 ???
@@ -953,8 +1019,34 @@ well, this seems to contradict that assumption (from docs):
 
 > If a contract wants to create another contract, the source code (and the binary) of the created contract has to be known to the creator. This means that cyclic creation dependencies are impossible.
 
-might be able to test this in Mix- see if source can be associated with an address manually on the testnet after clearing Mix settings 
+might be able to test this in Mix- see if source can be associated with an address manually on the testnet after clearing Mix settings
 
+
+
+
+
+
+
+---
+## Contracts creating contracts
+
+Note the brackets needed in order to provide a particular value to the constructor call.
+
+```
+contract B {}
+
+
+contract A {
+    address child;
+
+    function test() {
+        child = (new B).value(10)(); //construct a new B with 10 wei
+    }
+}
+```
+
+???
+:TODO: finish
 
 
 
@@ -977,7 +1069,7 @@ A code library in Ethereum is just a contract declared with the `library` keywor
 
 > If you use libraries, take care that an actual external function call is performed.
 
-.caveat[When deploying, the library will actually be deployed to a separate contract on the blockchain.] All external function call rules apply.
+.caveat[When deploying, the library will actually be deployed to a separate contract on the blockchain.] The usual external function `delegatecall` rules apply.
 
 It's important to note the importance of the `storage` keyword in function parameters for libraries. Without this keyword, functions will create a deep copy of any arguments passed in, which is not only expensive in memory consumption but also means that modifying storage directly via library methods would not be possible- which is where the power of `delegatecall` comes from.
 
@@ -1010,7 +1102,7 @@ name: libraries-as-datatypes
 ### Libraries as datatypes
 ]
 .right-column[
-The most useful application of libraries appears to be as extensions to the core datatypes available in the language. For example (taken from the docs), given the library:
+One useful application of libraries appears to be as extensions to the core datatypes available in the language. For example (taken from the docs), given the library:
 
 ```
 library Set {
@@ -1101,6 +1193,8 @@ name: event-interface
 ### Event interface
 
 > The main advantage of events is that they are stored in a special way on the blockchain so that it is very easy to search for them.
+>
+> <cite>http://solidity.readthedocs.io/en/latest/frequently-asked-questions.html</cite>
 
 Basically events are ways of easily exposing data to external callers. The blockchain transaction log mechanism is used for this, which is why the behaviour is slightly quirky...
 
@@ -1200,7 +1294,7 @@ name: code-best-practises
 ]
 .right-column[
 
-Enough nuts and bolts, how do we write these things?!
+Enough nuts and bolts, how should we write these things?!
 ]
 
 ???
@@ -1222,17 +1316,10 @@ name: iteration-vs-recursion
 The EVM has an artificial stack depth limit of 1024 to prevent runaway contracts from executing recursion-based exploits. This safeguard is the only reason The DAO wasn't *completely* drained, so it's a good thing to have. Unfortunately it also essentially obviates recursion-based language design... unless a very interesting compiler is built!
 
 Only external function calls have an impact on stack depth. Internal functions are implemented as `JUMP` instructions within the virtual CPU. Library function calls count towards stack depth, inherited functions don't. Keep these factors in mind when designing your contracts.
+
+.suggestion[Recurse like crazy when using internal function calls.]  
+.suggestion[Avoid recursing when using external function calls], unless you have validated your code to work only under known scenarios where a necessarily shallow call-depth is expected.]
 ]
-
-
-
-
-
----
-template: suggestion
-
-- recurse like crazy when using internal function calls.
-- avoid recursing when using external function calls, unless you have validated your code to work only under known scenarios where a necessarily shallow call-depth is expected.
 
 ???
 :TODO: see if there are any limits on recursion for internal method calls
@@ -1544,10 +1631,40 @@ name: guidelines-to-avoid-this-pitfall
 
 
 ---
-template: suggestion
+<h2>More suggestions</h2>
 
 - Learn to appreciate and understand the value of "functional programming" as well as "condition-oriented programming" ([https://medium.com/@gavofyork/condition-orientated-programming-969f6ba0161a](https://medium.com/@gavofyork/condition-orientated-programming-969f6ba0161a)).
 - Use function modifiers to abstract conditions into annotations as much as possible.
+    - Write base modifiers as pure functions which do not depend on any external state, and use functional composition to create specifics. This helps to keep modifiers generic, eg:
+    ```
+contract OwnershipModifiers {
+    modifier onlyBy(address _account) {
+        if (msg.sender != _account)
+            throw;
+        _
+    }
+}
+
+contract Owned is OwnershipModifiers {
+    address owner;
+
+    modifier onlyOwner() onlyBy(owner) {
+        _
+    }
+
+    function Owned() {
+        owner = msg.sender;
+    }
+
+    function changeOwner(address _newOwner) onlyOwner {
+        owner = _newOwner;
+    }
+
+    function destroy() onlyOwner {
+        suicide(msg.sender);
+    }
+}
+    ```
 - Write unit tests for everything.
 - Minimise dependencies between contracts and functions as much as possible.
 
@@ -1595,7 +1712,7 @@ name: towards-a-better-language
     
 http://vessenes.com/deconstructing-thedao-attack-a-brief-code-tour/
 
-- A purely functional language with a rich type system is needed. If we can't have that right now,
+- A purely functional language with a rich type system is needed. If we can't have that right now (see *"The FunArg Problem"*), we need tools to write more bug-free code in the languages we have.
 - All calls that send to untrusted address should have a gas limit
 - Balances should be reduced before a send, not after one
 - Events should probably have a Log prepended to their name.
@@ -1612,13 +1729,14 @@ example @ http://vessenes.com/more-ethereum-attacks-race-to-empty-is-the-real-de
 :TODO:
 https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s   (discussion on proof-based languages for smart contracts)
 
+Solidity 2.0 roadmap
 
 
 
 
 
 ---
-template: suggestion
+<h1>Towards a better language?</h1>
 
 Having written C, C++ and Java but also having written JavaScript using functional methodologies it's easy to see how Solidity *could* be leveraged to build rock-solid Dapps. It's also easy to see how you can shoot yourself in the foot with it. Some code smells we seem to be repeating here:
 
@@ -1711,6 +1829,7 @@ name: function-libraries
 
 - find a well unit-tested storage framework (or make one)
 - ADTs for efficient storage
+- ABI encoders & decoders
 - audit this stuff again, get more specific links
 
 - https://github.com/Arachnid/ens - Ethereum Name Service
@@ -1720,6 +1839,7 @@ name: function-libraries
 - https://github.com/chriseth/solidity-examples
 - https://github.com/dadaista/bitshelter
 - https://github.com/emailgregn/contracts
+- https://github.com/fivedogit/solidity-baby-steps/
 - https://github.com/FrankHold/DApp_SyntheticTrader
 - https://github.com/JeffreyBPetersen/contract-testing
 - https://github.com/JeffreyBPetersen/data-sharing-contracts
