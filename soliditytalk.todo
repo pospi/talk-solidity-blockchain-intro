@@ -1,8 +1,7 @@
 Slide deck:
- ☐ get syntax highlighting for solidity working if possible:
-    ☐ https://github.com/consensys/contract-viewer
-    ☐ see if this fixes DAO what went wrong slide layout
  ☐ extract caveats & make clearer
+ ☐ update syntax def with current language keywords
+ ☐ resolve issue with content classes breaking nested templates or code blocks depending on workaround
  ☐ cite quotes
  ☐ maybe make suggestions into labels on other slides instead of takeovers
  ☐ go through todos, work out images & demo code needed:
@@ -26,6 +25,7 @@ Research:
    ☐ gas costs for internal, external & library function calls
    ☐ gas costs for internal & external self / parent / ancestor / multiparent lookups
    - Understand inheritance: concatenative or delegative?
+ ☐ investigate generation of call-flow graphs
  - Test how fixed point rounding works
  - ABI encoders / decoders
  - ADTs along the lines of the C STL
