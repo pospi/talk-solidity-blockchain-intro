@@ -1,6 +1,7 @@
 Some slides on Solidity as a blockchain programming language.
 
-Built using http://remarkjs.com/ and http://rollupjs.org
+Built using http://remarkjs.com/ and http://rollupjs.org  
+Hacked together with parts from https://github.com/consensys/contract-viewer
 
 # Setup
 
@@ -14,4 +15,4 @@ Built using http://remarkjs.com/ and http://rollupjs.org
 
 # Editing
 
-Just hack at [`solidity-notes.md`](./solidity-notes.md)...
+Just hack at [`solidity-notes.md`](./solidity-notes.md) while viewing the dev server in your browser. `p` toggles presenter mode (so you can see the slide notes & TODOs).

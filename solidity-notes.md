@@ -541,7 +541,7 @@ name: other-reference-types
 
 The full suite of low-level tools for organising and rationalising information is available...
 
-.twocol[
+.col2-left[
 #### mappings:
 
 Are defined with type syntax eg. `mapping (uint => address) myAddressList;`
@@ -549,7 +549,10 @@ Are defined with type syntax eg. `mapping (uint => address) myAddressList;`
 - are hashes which allow pretty much any value other than another mapping as keys.
 - **are only allowed for state variables** (or as storage reference types in internal functions).
 
-#### structs: 
+]
+.col2-right[
+
+#### structs:
 
 C-like, eg:
 
@@ -565,6 +568,7 @@ struct Funder {
 - can't be recursed / defined in terms of themselves.
 
 <br />
+
 ]
 ]
 
@@ -687,31 +691,37 @@ name: control-flow--syntax
 ]
 .right-column[
 
-- All the standard C stuff: `if`, `else`, `for`, `while`, `break`, `continue` and `return`. No `switch` or `goto`, by design (generally not performant logic structures).
-- No type coercion from `int` -> `bool`, you need to do this manually when checking conditions based on integral types.
-- Return types are specified in the function signature: 
-  ```
-    function func(uint k, uint) returns(uint) {
-        //...
-    }
-  ```
-- Tuples can be used to return and assign multiple values, denoted by parentheses:
-  
-  ```
-    function f() returns (uint, bool, uint) {
-        return (7, true, 2);
-    }
-  ```
-- Named arguments (a bit Rust-like) are possible:
-  ```
-    contract C {
-        function f(uint key, uint value) { /*...*/ }
+All the standard C stuff: `if`, `else`, `for`, `while`, `break`, `continue` and `return`. No `switch`, by design (not as performant as if/else conditions).
 
-        function g() {
-            f({value: 2, key: 3});
-        }
+.caveat[No type coercion from `int` -> `bool`, you need to do this explicitly in conditionals.]
+
+Return types are specified in the function signature:
+
+```
+function func(uint k, uint) returns(uint) {
+    //...
+}
+```
+
+Tuples can be used to return and assign multiple values, denoted by parentheses:
+  
+```
+function f() returns (uint, bool, uint) {
+    return (7, true, 2);
+}
+```
+
+Named arguments (a bit Rust-like) are possible:
+
+```
+contract C {
+    function f(uint key, uint value) { /* ... */ }
+    
+    function g() {
+        f({ value: 2, key: 3 });
     }
-  ```
+}
+```
 
 ]
 
@@ -1004,16 +1014,8 @@ The most useful application of libraries appears to be as extensions to the core
 
 ```
 library Set {
-    // We define a new struct datatype that will be used to
-    // hold its data in the calling contract.
     struct Data { mapping(uint => bool) flags; }
-  
-    // Note that the first parameter is of type "storage
-    // reference" and thus only its storage address and not
-    // its contents is passed as part of the call.  This is a
-    // special feature of library functions.  It is idiomatic
-    // to call the first parameter 'self', if the function can
-    // be seen as a method of that object.
+
     function insert(Data storage self, uint value)
         returns (bool)
     {
@@ -1022,7 +1024,7 @@ library Set {
         self.flags[value] = true;
         return true;
     }
-  
+
     function remove(Data storage self, uint value)
         returns (bool)
     {
@@ -1163,7 +1165,7 @@ contract MyBank {
 .col2-right[
 Dapp JavaScript:
 
-```
+```js
 var event = myContract.TransactionMade();
 event.watch((err, result) => {
     console.log('Someone made a transaction:', result);
