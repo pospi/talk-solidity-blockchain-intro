@@ -1,39 +1,49 @@
 Slide deck:
- ☐ extract caveats & make clearer
- ☐ update syntax def with current language keywords
  ☐ resolve issue with content classes breaking nested templates or code blocks depending on workaround
  ☐ cite quotes
- ☐ maybe make suggestions into labels on other slides instead of takeovers
- ☐ go through todos, work out images & demo code needed:
-   ☐ images:
-     ☐ ....
-   ☐ demo code:
-     ☐ ....
  ☐ setup script for cloning libraries: get-example-libs.sh
+ ☐ finish syntax def
+
+
+Content:
+ ☐ go through todos, work out images & demo code needed:
+ ☐ images:
+   ☐ chain / EVM / solidity system diagram
+ ☐ demo code:
+   ☐ check bit math for manipulating byte arrays
+   ☐ check to see if odd-sized things like `bytes3` are things and if `bytes33` and above are (change types docs if so)
+   - Test if/how fixed point rounding works
+   ☐ saving a record from a CSV with JS
+   ☐ finish Set library example
+   ☐ audit function libraries and pull / link useful ones
+     - ABI encoders / decoders
+     - ADTs along the lines of the C STL
+   - Design patterns
+     - http://solidity.readthedocs.io/en/latest/common-patterns.html
 
 
 Research:
- - Unit testing framework that outputs useful benchmarking data:
-     - [confirm the following assumptions](http://ethereum.stackexchange.com/q/5957/2665):
-     - gas cost (indicator of computational complexity / electrical cost; estimated and actual)
-     - memory & storage usage (indicator of long-term storage efficiency)
-     - See if sol-unit / sunit is runnable and try to plug something in to it
+ ☐ go through Eris tutorial info
+ - Unit testing:
+   framework that outputs useful benchmarking data
+   - [confirm the following assumptions](http://ethereum.stackexchange.com/q/5957/2665):
+   - gas cost (indicator of computational complexity / electrical cost; estimated and actual)
+   - memory & storage usage (indicator of long-term storage efficiency)
+   - See if sol-unit / sunit is runnable and try to plug something in to it
  ☐ get dapple setup and see how unit testing operates
  - Benchmark various techniques to work out what's best
    At what rate does gas cost increase? In proportion to what?
    ☐ gas costs for storage manipulation: multiple mods vs single mod vs memory copy mod & replace
    ☐ gas costs for internal, external & library function calls
    ☐ gas costs for internal & external self / parent / ancestor / multiparent lookups
+   ☐ storage size of dynamic arrays with different int sizes for elements (is each slot padded to 256 bits?)
    - Understand inheritance: concatenative or delegative?
- ☐ investigate generation of call-flow graphs
- - Test how fixed point rounding works
- - ABI encoders / decoders
- - ADTs along the lines of the C STL
- - Useful base classes
- - Design patterns
- - Interfacing with IPFS?
 
  ☐ Is it possible, or will it be possible, to bind Solidity types and contract source code to bytecode for debugging purposes, for external contracts someday? or now? can i hack mix?
+ ☐ investigate generation of call-flow graphs
 
- ☐ Can `bytes` be longer than 32?
-   If so, all that stuff about 256 = 32 * 8 can go
+ - Interfacing with IPFS?
+
+Useful services:
+  - Ethereum alarm clock
+  - RANDAO https://github.com/randao/randao
