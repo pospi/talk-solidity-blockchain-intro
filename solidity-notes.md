@@ -103,7 +103,9 @@ template: start
     - [Function modifiers](#function-modifiers)
     - [Contract structure](#contract-structure)
     - [Method visibility](#method-visibility)
+        - [Internal and external interfaces](#internal-and-external-interfaces)
     - [Contracts calling contracts](#contracts-calling-contracts)
+        - [Contract fallback functions](#contract-fallback-functions)
         - [Reference types and contract interfaces](#reference-types-and-contract-interfaces)
     - [Contracts creating contracts](#contracts-creating-contracts)
     - [Library code](#library-code)
@@ -695,20 +697,17 @@ All these members of the `address` type are made available by the compiler for y
 
 - `send(val)` (send `val` wei to address, returns `false` on failure)  
     - The transfer fails if the call stack depth limit is exceeded, or the recipient runs out of gas.
-    - The contract's *fallback function* is called.
-        - This is a function with no name declared within the contract. It handles the condition when someone sends ether to the contract but doesn't do anything else. Since this is generally the result of user error, you should most often *(**but not always**)* provide this function as `function() { throw; }`.
+    - The contract's *fallback function* is called *(more on this later)*.
 - `call` & `delegatecall`
     - For calling other contracts which you don't yourself own or interacting with library contracts (to be discussed soon!)
-    - Works like JavaScript's `call` method, kinda like calling a function by its name.
+    - Note that `send(number)` is equivalent to `call.gas(0).value(number)()`. This makes `send` a safer option than `call`, since it ensures the address being called can't run any EVM code of its own&mdash; important when you don't know whether the recipient is a person or a contract! 
 - `callcode` is just `call` without the `msg` object, don't bother with it
-- none of these methods allow you to access the return value
+- none of these `address` methods allow you to access the return value
 - all return a boolean indicating whether the invoked function terminated (`true`) or caused an EVM exception (`false`)
 ]
 
 ???
 :TODO: should ensure that addresses behave the same for contracts and humans
-
-:TODO: need to find out how to get return values out of calling other contracts' methods (internal and external ones)
 
 
 
@@ -991,15 +990,17 @@ Note that the compiler automatically creates accessor functions of the same name
 
 
 
+
+
 ---
-name: contracts-calling-contracts
+name: internal-and-external-interfaces
 .left-column[
 <h1>Control flow & syntax</h1>
 <h2>Interpreter caveats</h2>
 <h2>Function modifiers</h2>
 <h2>Contract structure</h2>
 <h2>Method visibility</h2>
-## Contracts calling contracts
+### Internal and external interfaces
 ]
 .right-column[
 
@@ -1016,9 +1017,100 @@ As mentioned, the EVM has many languages which compile down to its CPU bytecode.
 ]
 
 ???
-:TODO: picture needed
+:TODO: picture needed <!--picABI-->
 
-:TODO: http://ethereum.stackexchange.com/q/2070/2665
+:TODO: work out what the caveats are
+
+
+
+
+
+
+---
+name: contracts-calling-contracts
+.left-column[
+<h1>Control flow & syntax</h1>
+<h2>Interpreter caveats</h2>
+<h2>Function modifiers</h2>
+<h2>Contract structure</h2>
+<h2>Method visibility</h2>
+<h3>Internal and external interfaces</h3>
+## Contracts calling contracts
+]
+.right-column[
+
+Remember this guy?
+
+> Do not develop Solidity contracts without a reasonable grasp of the underlying Ethereum Virtual Machine execution model, particularly around gas costs.
+
+We're about to see why this stuff is so scary.
+]
+
+???
+:TODO: random img
+
+
+
+
+
+
+---
+name: contract-fallback-functions
+.left-column[
+<h1>Control flow & syntax</h1>
+<h2>Interpreter caveats</h2>
+<h2>Function modifiers</h2>
+<h2>Contract structure</h2>
+<h2>Method visibility</h2>
+<h3>Internal and external interfaces</h3>
+<h2>Contracts calling contracts</h2>
+### Contract fallback functions
+]
+.right-column[
+
+Earlier we discussed the `address` methods `send` and `call`. Fallback functions are what happens when you fire these methods.
+
+They are declared as functions with no name declared within the contract, and handle the condition when someone sends ether to the contract but doesn't do anything else. Since this is generally the result of user error, you should most often *(**but not always**)* provide this function as below if you don't want your contract storing money:
+
+```
+contract nonReceiver {
+    function() {
+        throw;
+    }
+}
+```
+
+This will cause any funds sent in the transaction to be returned and the transaction to be politely rolled back until handled by the caller.
+
+
+
+
+
+
+---
+.left-column[
+<h1>Control flow & syntax</h1>
+<h2>Interpreter caveats</h2>
+<h2>Function modifiers</h2>
+<h2>Contract structure</h2>
+<h2>Method visibility</h2>
+<h3>Internal and external interfaces</h3>
+<h2>Contracts calling contracts</h2>
+<h3>Contract fallback functions</h3>
+]
+.right-column[
+
+#### `address` as the base prototype of all `contract`s
+
+`address` has an implicit default function that looks like this: `function() {}`. In other words- take the money and do nothing. When you call `send` or `call` against another contract, this is why you lose your money unless the recipient is a real person or a contract that handles the fallback condition.
+
+When we know what's contained within a contract, we can typecast the address to the known signature of our contract bytecode, and interact with it using our own API:
+
+```
+```
+
+???
+:TODO: need to find out how to get return values out of calling other contracts' methods (internal and external ones)
 
 
 
@@ -1033,6 +1125,7 @@ name: reference-types-and-contract-interfaces
 <h2>Function modifiers</h2>
 <h2>Contract structure</h2>
 <h2>Method visibility</h2>
+<h3>Internal and external interfaces</h3>
 <h2>Contracts calling contracts</h2>
 ]
 .right-column[
@@ -1061,6 +1154,17 @@ might be able to test this in Mix- see if source can be associated with an addre
 
 
 ---
+name: contracts-creating-contracts
+.left-column[
+<h1>Control flow & syntax</h1>
+<h2>Interpreter caveats</h2>
+<h2>Function modifiers</h2>
+<h2>Contract structure</h2>
+<h2>Method visibility</h2>
+<h3>Internal and external interfaces</h3>
+<h2>Contracts calling contracts</h2>
+]
+.right-column[
 ## Contracts creating contracts
 
 Note the brackets needed in order to provide a particular value to the constructor call.
@@ -1078,6 +1182,7 @@ contract A {
 }
 ```
 
+]
 ???
 :TODO: finish
 
@@ -1093,6 +1198,7 @@ name: library-code
 <h2>Function modifiers</h2>
 <h2>Contract structure</h2>
 <h2>Method visibility</h2>
+<h3>Internal and external interfaces</h3>
 <h2>Contracts calling contracts</h2>
 ## Library code
 ]
@@ -1130,6 +1236,7 @@ name: libraries-as-datatypes
 <h2>Function modifiers</h2>
 <h2>Contract structure</h2>
 <h2>Method visibility</h2>
+<h3>Internal and external interfaces</h3>
 <h2>Contracts calling contracts</h2>
 <h2>Library code</h2>
 ### Libraries as datatypes
@@ -1184,6 +1291,7 @@ name: what-are-contract-events
 <h2>Function modifiers</h2>
 <h2>Contract structure</h2>
 <h2>Method visibility</h2>
+<h3>Internal and external interfaces</h3>
 <h2>Contracts calling contracts</h2>
 <h2>Library code</h2>
 ## What are contract events?
@@ -1217,6 +1325,7 @@ name: event-interface
 <h2>Function modifiers</h2>
 <h2>Contract structure</h2>
 <h2>Method visibility</h2>
+<h3>Internal and external interfaces</h3>
 <h2>Contracts calling contracts</h2>
 <h2>Library code</h2>
 <h2>What are contract events?</h2>
@@ -1260,6 +1369,7 @@ name: event-interface-cotd
 <h2>Function modifiers</h2>
 <h2>Contract structure</h2>
 <h2>Method visibility</h2>
+<h3>Internal and external interfaces</h3>
 <h2>Contracts calling contracts</h2>
 <h2>Library code</h2>
 <h2>What are contract events?</h2>
@@ -1643,6 +1753,9 @@ name: guidelines-to-avoid-this-pitfall
 - Presume any methods in your contract other than `internal` and `private` ones will be called by contracts other than those you expect.
 - Also never presume that an address === a user. An address does not guarantee a real person.
 - Use `send` instead of `call` wherever possible. Even then, ensure you handle failures correctly, and again, update your contract's own state **first**.
+  > send is safer to use since by default it doesn't forward any gas, so the receiver's fallback function can only emit events.
+  >
+  > <cite>http://ethereum.stackexchange.com/a/6474/2665</cite>
 - Presume any call to an externally accessible contract method you define may run out of gas and fail.
 
 ???
