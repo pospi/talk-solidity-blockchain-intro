@@ -29,7 +29,7 @@
   "homepage": "https://github.com/pospi/solidity-intro-slides#readme",
   "dependencies": {
     "almond": "^0.3.2",
-    "remark": "pospi/remark#develop"
+    "remark": "pospi/remark#wip-enhancements"
   },
   "devDependencies": {
     "browser-sync": "^2.13.0",
