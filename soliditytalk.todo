@@ -2,31 +2,41 @@ Slide deck:
  ☐ resolve issue with content classes breaking nested templates or code blocks depending on workaround
  ☐ cite quotes
  ☐ setup script for cloning libraries: get-example-libs.sh
+ ☐ highlight spans as well as blocks
  ☐ finish syntax def
-
 
 Content:
  ☐ go through todos, work out images & demo code needed:
  ☐ images:
-   ☐ chain / EVM / solidity system diagram
- ☐ demo code:
+   ☐ <!--pic01--> chain / EVM / solidity system diagram
+   ☐ <!--picRT--> storage/ref types onchain/inEVM location pic
+     ☐ include where context coercion happens
+   ☐ ABI/Solidity contract interfaces diagram
+ ☐ verify stuff:
    ☐ check bit math for manipulating byte arrays
    ☐ check to see if odd-sized things like `bytes3` are things and if `bytes33` and above are (change types docs if so)
-   - Test if/how fixed point rounding works
-   ☐ saving a record from a CSV with JS
+   ☐ write test code to explain behaviour of function `storage` vars
+ ☐ demo code:
+   ☐ saving some data using web stack vs ethereum
    ☐ finish Set library example
+   ☐ address typecasting
+   ☐ modifiers for collapsing function conditions
    ☐ audit function libraries and pull / link useful ones
      - ABI encoders / decoders
      - ADTs along the lines of the C STL
    - Design patterns
      - http://solidity.readthedocs.io/en/latest/common-patterns.html
+   - Test if/how fixed point rounding works
+ ☐ filler:
+   ☐ "Best places to get started"
+   ☐ "A blockchain is not always the answer"
+   ☐ types intro
 
 
 Research:
  ☐ go through Eris tutorial info
  - Unit testing:
    framework that outputs useful benchmarking data
-   - [confirm the following assumptions](http://ethereum.stackexchange.com/q/5957/2665):
    - gas cost (indicator of computational complexity / electrical cost; estimated and actual)
    - memory & storage usage (indicator of long-term storage efficiency)
    - See if sol-unit / sunit is runnable and try to plug something in to it
@@ -38,6 +48,7 @@ Research:
    ☐ gas costs for internal & external self / parent / ancestor / multiparent lookups
    ☐ storage size of dynamic arrays with different int sizes for elements (is each slot padded to 256 bits?)
    - Understand inheritance: concatenative or delegative?
+   - see what happens when you try to run a function on a user account address
 
  ☐ Is it possible, or will it be possible, to bind Solidity types and contract source code to bytecode for debugging purposes, for external contracts someday? or now? can i hack mix?
  ☐ investigate generation of call-flow graphs
