@@ -342,7 +342,7 @@ name: value-types
     - FPU "coming soon". I wouldn't be surprised if this does not come until Ethereum 2.0 (proof of stake). If a Nintendo DS is too low-powered for one, then the EVM *definitely* is.
 - enums (c-like, stored as smallest possible `int` type)
     - When passed over the ABI, will be coerced: given `enum ActionState { Started, Stopped }`, `StartAction == 0` etc
-- time units and ether units can all be entered literally for convenience and are interpreted as the base type (`wei` and `second`). `2 ether == 2000 finney`, `1 minutes == 60 seconds` etc. Note that all arithmetic uses ideal time and does not account for timezones, leap seconds or otherwise.  
+- time units and ether units can all be entered literally for convenience and are interpreted as the base type (`wei` and `second`). `2 ether == 2000 finney`, `1 minutes == 60 seconds` etc. Note that all arithmetic uses ideal time and does not account for timezones, leap seconds or otherwise. See http://ether.fund/tool/converter for converting ether units.  
   .suggestion[Always specify these units when performing time calculations or value transactions for clarity.]
 ]
 
