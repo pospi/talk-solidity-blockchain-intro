@@ -2,7 +2,6 @@ Slide deck:
  ☐ resolve issue with content classes breaking nested templates or code blocks depending on workaround
  ☐ cite quotes
  ☐ setup script for cloning libraries: get-example-libs.sh
- ☐ highlight spans as well as blocks
  ☐ finish syntax def
 
 Content:
@@ -11,7 +10,7 @@ Content:
    ☐ <!--pic01--> chain / EVM / solidity system diagram
    ☐ <!--picRT--> storage/ref types onchain/inEVM location pic
      ☐ include where context coercion happens
-   ☐ ABI/Solidity contract interfaces diagram
+   ☐ <!--picABI--> ABI/Solidity contract interfaces diagram
  ☐ verify stuff:
    ☐ check bit math for manipulating byte arrays
    ☐ check to see if odd-sized things like `bytes3` are things and if `bytes33` and above are (change types docs if so)
@@ -21,6 +20,8 @@ Content:
    ☐ finish Set library example
    ☐ address typecasting
    ☐ modifiers for collapsing function conditions
+   ☐ make some inter-contract method calls and see what the caveats are
+   ☐ deploy another DAO on the testnet, wipe it from Mix, attempt to make a contract that creates new instances of it
    ☐ audit function libraries and pull / link useful ones
      - ABI encoders / decoders
      - ADTs along the lines of the C STL
