@@ -26,6 +26,7 @@ const slideshow = remark.create({
     ratio: '16:9',
     highlightLanguage: 'solidity',
     highlightStyle: 'solarized-light',
+    highlightInlineCode: true,
 });
 
 export default slideshow;
