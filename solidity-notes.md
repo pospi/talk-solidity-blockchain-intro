@@ -93,6 +93,7 @@ template: start
     - [Arrays](#arrays)
         - [Using arrays](#using-arrays)
         - [Array caveats](#array-caveats)
+        - [Array caveats \(cot'd\)](#array-caveats-cotd)
     - [Other reference types](#other-reference-types)
     - [Addresses](#addresses)
         - [Address methods](#address-methods)
@@ -163,7 +164,7 @@ Note that RAM & hard disk are combined since Ethereum's execution *as a program*
 
 ???
 
-:TODO: Needs chain / EVM / Solidity picture
+:TODO: Needs chain / EVM / Solidity picture <!--pic01-->
 
 
 
@@ -359,7 +360,7 @@ name: constants
 ]
 .right-column[
 
-An important optimisation is to use the `constant` modifier when declaring contract variables that don't change. The compiler will substitute the raw value for the variable and skip reserving memory storage for it. You can use basic integer arithmetic in these assignments.
+An important optimisation is to use the `constant` modifier when declaring contract variables that don't change. The compiler will substitute the raw value for the variable and skip reserving `storage` for it. You can use basic integer arithmetic in these assignments.
 
 ```
 contract C {
@@ -368,7 +369,7 @@ contract C {
 }
 ```
 
-.caveat[There is also a `constant` keyword for functions, but it is not yet enforced.]
+.caveat[There is also a `constant` keyword for defining functions as immutable, but it is not yet enforced.]
 
 ]
 
@@ -388,8 +389,13 @@ name: reference-types
 ]
 .right-column[
 
+All reference types are accessed via variables on your deployed contract. There is no OO-like `static` in the sense of shared memory space on the class that is accessible by all instances of an object. To achieve such an outcome, one would need to deploy a separate shared storage contract to the blockchain and reference its address onto each of your own compiled contracts.
+
 Solidity's reference types take on an additional attribute in their *"context"*- defined as either `storage` or `memory`. This language keyword is all that is needed to differentiate between persistent data stored on-chain and transient data used during intermediate computations.
 ]
+
+???
+:TODO: <!--picRT--> needs storage/ref types pic
 
 
 
@@ -399,11 +405,20 @@ Solidity's reference types take on an additional attribute in their *"context"*-
 
 ---
 name: data-location
+.left-column[
+<h1>Types</h1>
+<h2>Value types</h2>
+<h3>Constants</h3>
+<h2>Reference types</h2>
 ### Data location
+]
+.right-column[
 
-For reference types, we have to think about whether the data they reference is only kept in `memory` while the EVM is running this execution cycle, or if they should persist to `storage`. If you continue to think of contracts the same as classes, then these semantics should follow:
+For reference types, we have to think about whether the data they reference is only kept in `memory` while the EVM is running this execution cycle, or if they should persist to `storage`.
 
 > The default for function parameters (including return parameters) is memory, the default for local variables is storage and the location is forced to storage for state variables (obviously).
+
+If you continue to think of contracts the same as classes, then these semantics should follow:
 
 - Contracts ~= Classes
 - Deployed contracts ~= Objects
@@ -413,7 +428,6 @@ For reference types, we have to think about whether the data they reference is o
 
 ???
 :TODO: 
-- picture
 - work out what up with the above comment cos surely not every locally assigned variable in a function persists
 
 
@@ -428,23 +442,26 @@ name: handling-data-location
 <h2>Value types</h2>
 <h3>Constants</h3>
 <h2>Reference types</h2>
+<h3>Data location</h3>
 ]
 .right-column[
 
 ### Handling Data location
 
-You must declare `storage` in your function signatures if you want to operate on storage data without it being copied into memory first (which is an expensive operation). All memory keeps its existing context except for when storage data is passed in as a non-storage function parameter.
+- Simply declare variables as `storage` or `memory` depending on whether you want them to be persisted to the blockchain. No I/O necessary- just assign data and you're done!
+- Add the same keywords to function arguments in order to control the data's *context* when passed in.
+- .caveat[You must declare `storage` in your function signatures if you want to operate on storage data without it being copied into memory first]  (which is an expensive operation).
 
-You can declare local variables within functions which reference storage variables. Modifying data via references will modify the persistent storage data the reference is bound to. Conceptually this is the same as a JavaScript or C reference- a new memory pointer was created to store a reference to another piece of (storage) memory that was already present. Storage addresses and memory addresses are all part of a single address space as far as the EVM operates.
+#### Cleaning up
 
-There is no OO-like 'static' in the sense of shared memory space on the class that is accessible by all instances of an object. To achieve such an outcome, one would need to deploy a separate shared storage contract to the blockchain and reference its address onto each of your own compiled contracts.
+Deleting state variables can be done with the `delete` operator. .caveat[Contract storage is statically assigned at the time of contract creation]&mdash; there is really no such thing as "delete". What the operator really does is set the value to the initial value for the type, ie. `x = 0` for integers. Because of this, some weird caveats apply when attempting to delete references to already deleted storage variables&mdash; .suggestion[always address the full path to data you wish to delete.]
 
-Deleting state variables can be done with the `delete` operator. Note however that since *contract storage is statically assigned at the time of contract creation*, there is really no such thing as "delete". What the operator really does is set the value to the initial value for the type, ie. `x = 0` for integers. Because of this, some weird caveats apply when attempting to delete references to already deleted storage variables - you should really always be addressing the full path to the data you are deleting in any case.
+#### Reference behaviour
+
+You can declare local variables within functions which reference storage variables. Modifying data via references will modify the persistent storage data the reference is bound to. Conceptually this is the same as a JavaScript or C reference- a new pointer was created to store a reference to another piece of (`storage`) memory that was already present. **Variables are just dumb pointers and don't care whether the address they reference is in `memory` or `storage`.**
 ]
 
 ???
-:TODO: check whether memory keeping context is glossing over it or OK to say
-
 :TODO: add another slide with an example of what 'handling data location' looks like in say node vs eth
 
 
@@ -513,7 +530,7 @@ Arrays and `bytes` both have a `length` member and a `push` method that most wil
 
 
 ---
-name: using-arrays
+name: array-caveats
 .left-column[
 <h1>Types</h1>
 <h2>Value types</h2>
@@ -523,9 +540,9 @@ name: using-arrays
 ]
 .right-column[
 
-<h3>Using arrays</h3>
+### Array caveats
 
-You can't make arrays all that large in practise:
+You can't make `storage` arrays all that large in practise:
 
 > Note that filling a 10x10 square of `uint8` + contract creation took more than 800,000 gas at the time of this writing. 17x17 took 2,000,000 gas. With the limit at 3.14 million... well, there’s a pretty low ceiling for what you can create right now.
 >
@@ -548,7 +565,6 @@ You can't make arrays all that large in practise:
 
 
 ---
-name: array-caveats
 .left-column[
 <h1>Types</h1>
 <h2>Value types</h2>
@@ -558,7 +574,7 @@ name: array-caveats
 ]
 .right-column[
 
-### Array caveats
+### Array caveats (cot'd)
 
 - Array types will be coerced to the most generic type of its contents. So an array with many `uint8`s in it will be interpreted as `uint8`, whereas one containing both `uint8` and `uint16` would be interpreted as `uint16`.
 - Fixed-size and dynamically-sized arrays cannot be mixed *(yet- this is planned to be resolved in future)*
@@ -591,10 +607,15 @@ The full suite of low-level tools for organising and rationalising information i
 .col2-left[
 #### mappings:
 
-Are defined with type syntax eg. `mapping (uint => address) myAddressList;`
+Are defined with type syntax eg. 
 
-- are hashes which allow pretty much any value other than another mapping as keys.
-- **are only allowed for state variables** (or as storage reference types in internal functions).
+```
+mapping (uint => address) myAddressList;
+```
+
+Like a JavaScipt `HashMap`, allows pretty much any value other than another mapping as keys.
+
+.caveat[Mappings are only allowed for `storage` variables]  (or as `storage` reference types in internal functions).
 
 ]
 .col2-right[
@@ -618,11 +639,6 @@ struct Funder {
 
 ]
 ]
-
-???
-:TODO: needs picture for ABI/Solidity/other languages interaction
-
-:TODO: can't remember if these structs mentioned are just other words for mappings or something else.. wrote this a long time ago :/
 
 
 
@@ -738,7 +754,7 @@ contract Consumer {
 }
 ```
 
-Note the chained method calls only set the values, and it's not until the final set of braces are executed that the external method runs. This is conceptually similar to using `.call()` and `.apply()` in JavaScript.
+Note the chained method calls only set the values, and it's not until the final set of braces are executed that the external method runs. This is conceptually similar to using `.bind()` or function currying in JavaScript.
 ]
 
 
@@ -753,6 +769,7 @@ name: control-flow--syntax
 # Control flow & syntax
 ]
 .right-column[
+<h3>Basic constructs</h3>
 
 All the standard C stuff: `if`, `else`, `for`, `while`, `break`, `continue` and `return`. No `switch`, by design (not as performant as if/else conditions).
 
@@ -761,15 +778,36 @@ All the standard C stuff: `if`, `else`, `for`, `while`, `break`, `continue` and 
 Return types are specified in the function signature:
 
 ```
-function func(uint k, uint) returns(uint) {
-    //...
+function func(uint k, uint) returns(uint) { 
+    return 3;
 }
 ```
 
-Tuples can be used to return and assign multiple values, denoted by parentheses:
+]
+
+
+
+
+
+
+---
+.left-column[
+<h1>Control flow & syntax</h1>
+]
+.right-column[
+<h3>Convenience features</h3>
+
+Tuple structures are not first-class types yet, but they can be used in a limited form to return and assign multiple values, denoted by parentheses:
   
 ```
-function f() returns (uint, bool, uint) {
+function f() returns(uint, bool, uint) {
+    return (7, true, 2);
+}
+
+function g() returns(uint, bool, uint) {
+    var (a, b, c) = f();               // argument unpacking
+    (a, b, ) = (1, false, "ignored");  // also fine
+    var error = (1, 2);                // not at all fine
     return (7, true, 2);
 }
 ```
@@ -777,19 +815,14 @@ function f() returns (uint, bool, uint) {
 Named arguments (a bit Rust-like) are possible:
 
 ```
-contract C {
-    function f(uint key, uint value) { /* ... */ }
-    
-    function g() {
-        f({ value: 2, key: 3 });
-    }
+function f(uint key, uint value) { /* ... */ }
+
+function g() {
+    f({ value: 2, key: 3 });
 }
 ```
 
 ]
-
-???
-:TODO: can tuples be unpacked, or are they just for handling function args?
 
 
 
