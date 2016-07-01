@@ -1081,6 +1081,7 @@ contract nonReceiver {
 ```
 
 This will cause any funds sent in the transaction to be returned and the transaction to be politely rolled back until handled by the caller.
+]
 
 
 
@@ -1108,6 +1109,8 @@ When we know what's contained within a contract, we can typecast the address to 
 
 ```
 ```
+
+]
 
 ???
 :TODO: need to find out how to get return values out of calling other contracts' methods (internal and external ones)
