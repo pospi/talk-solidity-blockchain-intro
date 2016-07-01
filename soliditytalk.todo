@@ -15,11 +15,13 @@ Content:
    ☐ check bit math for manipulating byte arrays
    ☐ check to see if odd-sized things like `bytes3` are things and if `bytes33` and above are (change types docs if so)
    ☐ write test code to explain behaviour of function `storage` vars (persist after transaction?)
+   ☐ check that fallbacks are always public
  ☐ demo code:
    ☐ saving some data using web stack vs ethereum
    ☐ finish Set library example
    ☐ address typecasting
    ☐ modifiers for collapsing function conditions
+   ☐ passing a string over the ABI
    ☐ audit function libraries and pull / link useful ones
      - ABI encoders / decoders
      - ADTs along the lines of the C STL
