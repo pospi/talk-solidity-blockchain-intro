@@ -93,7 +93,6 @@ template: start
     - [Arrays](#arrays)
         - [Using arrays](#using-arrays)
         - [Array caveats](#array-caveats)
-        - [Array caveats \(cot'd\)](#array-caveats-cotd)
     - [Other reference types](#other-reference-types)
     - [Addresses](#addresses)
         - [Address methods](#address-methods)
@@ -575,7 +574,7 @@ You can't make `storage` arrays all that large in practise:
 ]
 .right-column[
 
-### Array caveats (cot'd)
+<h3>Array caveats (cot'd)</h3>
 
 - Array types will be coerced to the most generic type of its contents. So an array with many `uint8`s in it will be interpreted as `uint8`, whereas one containing both `uint8` and `uint16` would be interpreted as `uint16`.
 - Fixed-size and dynamically-sized arrays cannot be mixed *(yet- this is planned to be resolved in future)*
