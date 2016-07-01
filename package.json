@@ -9,6 +9,7 @@
     "dev": "npm-run-all --parallel watch browse",
     "watch": "rollup -c -w",
     "browse": "browser-sync start --s --index 'index.html' --files 'index.html, src/*.js, src/**/*.js, *.md' --no-notify --no-open --reload-delay 5000",
+    "postinstall": "cp node_modules/almond/almond.js almond.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
