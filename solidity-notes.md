@@ -102,25 +102,25 @@ template: start
     - [Interpreter caveats](#interpreter-caveats)
     - [Function modifiers](#function-modifiers)
     - [Contract structure](#contract-structure)
+    - [Inline assembly](#inline-assembly)
+- [Contracts calling contracts](#contracts-calling-contracts)
     - [Method visibility](#method-visibility)
-        - [Internal and external interfaces](#internal-and-external-interfaces)
-    - [Contracts calling contracts](#contracts-calling-contracts)
-        - [Contract fallback functions](#contract-fallback-functions)
-        - [Reference types and contract interfaces](#reference-types-and-contract-interfaces)
+    - [Internal and external interfaces](#internal-and-external-interfaces)
+    - [Reference types and contract interfaces](#reference-types-and-contract-interfaces)
+    - [Contract fallback functions](#contract-fallback-functions)
+    - [Contracts as addresses](#contracts-as-addresses)
     - [Contracts creating contracts](#contracts-creating-contracts)
     - [Library code](#library-code)
         - [Libraries as datatypes](#libraries-as-datatypes)
-    - [What are contract events?](#what-are-contract-events)
-        - [Event interface](#event-interface)
-        - [Event interface \(cot'd\)](#event-interface-cotd)
+- [What are contract events?](#what-are-contract-events)
+    - [Event interface](#event-interface)
 - [Code best-practises](#code-best-practises)
     - [Iteration vs recursion](#iteration-vs-recursion)
     - [Mapping vs. Array](#mapping-vs-array)
     - [Composition or inheritance](#composition-or-inheritance)
     - [Delegates](#delegates)
     - [Contract design patterns](#contract-design-patterns)
-- [Inline assembly](#inline-assembly)
-- [Some real stats: quicksort vs. heapsort](#some-real-stats-quicksort-vs-heapsort)
+- [Some real stats](#some-real-stats)
 - [Misc gotchas](#misc-gotchas)
 - [TheDAO hack: what went wrong?](#thedao-hack-what-went-wrong)
     - [Short version](#short-version)
@@ -131,7 +131,6 @@ template: start
 - [Contract base classes](#contract-base-classes)
 - [Function libraries](#function-libraries)
 - [Final observations:](#final-observations)
-- [Thanks!](#thanks)
 
 <!-- /MarkdownTOC -->
 ]
@@ -412,9 +411,10 @@ name: data-location
 <h2>Value types</h2>
 <h3>Constants</h3>
 <h2>Reference types</h2>
-### Data location
 ]
 .right-column[
+
+### Data location
 
 For reference types, we have to think about whether the data they reference is only kept in `memory` while the EVM is running this execution cycle, or if they should persist to `storage`.
 
@@ -444,7 +444,6 @@ name: handling-data-location
 <h2>Value types</h2>
 <h3>Constants</h3>
 <h2>Reference types</h2>
-<h3>Data location</h3>
 ]
 .right-column[
 
@@ -853,7 +852,7 @@ name: function-modifiers
 ]
 .right-column[
 
-These are special syntaxes defined within your contracts. The names given can be applied to functions in order to execute the modifier before the function runs. You can `throw` or `return` from these modifiers to prevent the function from being called.
+**Perhaps one of the most important aspects of Solidity.** These are functions defined with a special `modifier` keyword within your contracts. The names given can be applied to functions in order to execute the modifier before the function runs. You can `throw` or `return` from these modifiers to prevent the function from being called or short-circuit its execution (respectively).
 
 ```
 modifier onlyOwner {
@@ -862,7 +861,7 @@ modifier onlyOwner {
     _   // the underscore will be replaced with the invoked function by the compiler
 }
     
-function destroy onlyOwner () { 
+function destroy() onlyOwner { 
     suicide(msg.sender);
 }
 ```
@@ -960,29 +959,86 @@ contract OverridingContract is ExampleContract, AnotherInterface {
 
 
 
-
 ---
-name: method-visibility
+name: inline-assembly
 .left-column[
 <h1>Control flow & syntax</h1>
 <h2>Interpreter caveats</h2>
 <h2>Function modifiers</h2>
 <h2>Contract structure</h2>
+## Inline assembly
+]
+.right-column[
+
+You can write inline assembly, too! - http://solidity.readthedocs.io/en/latest/control-structures.html#inline-assembly
+
+    library VectorSum {
+        // This function is less efficient because the optimizer currently fails to
+        // remove the bounds checks in array access.
+        function sumSolidity(uint[] _data) returns (uint o_sum) {
+            for (uint i = 0; i < _data.length; ++i)
+                o_sum += _data[i];
+        }
+
+        // We know that we only access the array in bounds, so we can avoid the check.
+        // 0x20 needs to be added to an array because the first slot contains the
+        // array length.
+        function sumAsm(uint[] _data) returns (uint o_sum) {
+            for (uint i = 0; i < _data.length; ++i) {
+                assembly {
+                    o_sum := mload(add(add(_data, 0x20), i))
+                }
+            }
+        }
+    }
+
+???
+:TODO: can you do this with LLL?!
+
+
+
+
+
+
+---
+name: contracts-calling-contracts
+.left-column[
+# Contracts calling contracts
+]
+.right-column[
+
+Remember this guy?
+
+> Do not develop Solidity contracts without a reasonable grasp of the underlying Ethereum Virtual Machine execution model, particularly around gas costs.
+
+We're about to see why this stuff is so scary.
+]
+
+???
+:TODO: random img
+
+
+
+
+
+
+---
+name: method-visibility
+.left-column[
+<h1>Contracts calling contracts</h1>
 ## Method visibility
 ]
 .right-column[
 
-On top of the usual, there is an extra distinction on method visibility: `external` vs `internal`.
+On top of the usual concepts of method visibility you'd be familiar with from C++, there is an extra distinction: *"external"* vs *"internal"*. **All method calls in Solidity are either "external" or "internal" at runtime.** The available method access specifiers are as follows:
 
-- `external`: Other contracts can call this method, and we ourselves *must* call it in that way.
-- `public`: callable from external contracts, as well as internally (default)
-- `internal`: similar to *"protected"* in C++ and obviously only internally callable since you need to define a subclass in order to inherit
-- `private`: only this contract, only internally
+- `external`: This method can be called externally by other contracts, and even its own methods *must* call it in that way.
+- `public`: Callable from external contracts, as well as internally *(default)*. The context of the method call will be that of the method that calls it, as you'd expect.
+- `internal`: Similar to *"protected"* in C++ and obviously only internally callable since you need to define a subclass in order to inherit.
+- `private`: Only callable by this contract, and only internally.
 
 Note that these are only access specifiers enforced by the EVM and in no way hide information contained within your contracts&mdash; they merely control how it can be manipulated.  
 **Everything is public on the blockchain** <sub>*<em>(discounting things like zero-knowledge proofs)</em></sub>
-
-Note that the compiler automatically creates accessor functions of the same name for all public state variables.
 ]
 
 
@@ -995,12 +1051,9 @@ Note that the compiler automatically creates accessor functions of the same name
 ---
 name: internal-and-external-interfaces
 .left-column[
-<h1>Control flow & syntax</h1>
-<h2>Interpreter caveats</h2>
-<h2>Function modifiers</h2>
-<h2>Contract structure</h2>
+<h1>Contracts calling contracts</h1>
 <h2>Method visibility</h2>
-### Internal and external interfaces
+## Internal and external interfaces
 ]
 .right-column[
 
@@ -1027,27 +1080,32 @@ As mentioned, the EVM has many languages which compile down to its CPU bytecode.
 
 
 ---
-name: contracts-calling-contracts
+name: reference-types-and-contract-interfaces
 .left-column[
-<h1>Control flow & syntax</h1>
-<h2>Interpreter caveats</h2>
-<h2>Function modifiers</h2>
-<h2>Contract structure</h2>
+<h1>Contracts calling contracts</h1>
 <h2>Method visibility</h2>
-<h3>Internal and external interfaces</h3>
-## Contracts calling contracts
+<h2>Int'l & ext'l interfaces</h2>
+## Reference types and contract interfaces
 ]
 .right-column[
 
-Remember this guy?
+Solidity's more complex datatypes can't be passed through external contract function calls. This is the difference between the  and the *Solidity Language Interface*- the former is at an EVM level and can only understand basic memory types, the latter is at a language level and can understand the more complex structures and conveniences Solidity provides over the raw assembly instructions and type interpretations.
 
-> Do not develop Solidity contracts without a reasonable grasp of the underlying Ethereum Virtual Machine execution model, particularly around gas costs.
+- Internal contract methods and methods of superclasses: All Solidity datatypes allowed, accessed directly
+- Other contract methods: Only ABI datatypes allowed, accessed via `call` and `delegatecall`
 
-We're about to see why this stuff is so scary.
+*However*- watch this space. I strongly suspect that if one has access to the source code of a contract then it could be applied over an address where said contract has been uploaded as a typecast in future (ie. `KnownContract(0x123ABetc)`), as is done automatically by Mix with contracts within your project.
 ]
 
 ???
-:TODO: random img
+:TODO: 
+well, this seems to contradict that assumption (from docs):
+
+> If a contract wants to create another contract, the source code (and the binary) of the created contract has to be known to the creator. This means that cyclic creation dependencies are impossible.
+
+might be able to test this in Mix- see if source can be associated with an address manually on the testnet after clearing Mix settings
+
+:TODO: string ABI passing example
 
 
 
@@ -1057,18 +1115,15 @@ We're about to see why this stuff is so scary.
 ---
 name: contract-fallback-functions
 .left-column[
-<h1>Control flow & syntax</h1>
-<h2>Interpreter caveats</h2>
-<h2>Function modifiers</h2>
-<h2>Contract structure</h2>
+<h1>Contracts calling contracts</h1>
 <h2>Method visibility</h2>
-<h3>Internal and external interfaces</h3>
-<h2>Contracts calling contracts</h2>
-### Contract fallback functions
+<h2>Int'l & ext'l interfaces</h2>
+<h2>Reference types & i'faces</h2>
+## Contract fallback functions
 ]
 .right-column[
 
-Earlier we discussed the `address` methods `send` and `call`. Fallback functions are what happens when you fire these methods.
+Earlier we discussed the `address` methods `send` and `call`. Fallback functions are what happens when you fire these methods. Fallback functions are always `public`.
 
 They are declared as functions with no name declared within the contract, and handle the condition when someone sends ether to the contract but doesn't do anything else. Since this is generally the result of user error, you should most often *(**but not always**)* provide this function as below if you don't want your contract storing money:
 
@@ -1083,31 +1138,35 @@ contract nonReceiver {
 This will cause any funds sent in the transaction to be returned and the transaction to be politely rolled back until handled by the caller.
 ]
 
+???
+
+:TODO: check that fallbacks are always public
+
 
 
 
 
 
 ---
+name: contracts-as-addresses
 .left-column[
-<h1>Control flow & syntax</h1>
-<h2>Interpreter caveats</h2>
-<h2>Function modifiers</h2>
-<h2>Contract structure</h2>
+<h1>Contracts calling contracts</h1>
 <h2>Method visibility</h2>
-<h3>Internal and external interfaces</h3>
-<h2>Contracts calling contracts</h2>
-<h3>Contract fallback functions</h3>
+<h2>Int'l & ext'l interfaces</h2>
+<h2>Reference types & i'faces</h2>
+<h2>Contract fallback functions</h2>
+## Contracts as addresses
 ]
 .right-column[
 
-#### `address` as the base prototype of all `contract`s
+If you want to think about this in JavaScript terms, you can think of `address` as being part of the prototype chain of every `contract`. In classical OO&mdash; a superclass is pretty accurate.
 
-`address` has an implicit default function that looks like this: `function() {}`. In other words- take the money and do nothing. When you call `send` or `call` against another contract, this is why you lose your money unless the recipient is a real person or a contract that handles the fallback condition.
+`address` has an implicit fallback function that looks like this: `function() {}`. In other words- take the money and do nothing. When you call `send` or `call` against another contract, this is why you lose your money unless the recipient is a real person or a contract that handles the fallback condition.
 
 When we know what's contained within a contract, we can typecast the address to the known signature of our contract bytecode, and interact with it using our own API:
 
 ```
+:TODO:
 ```
 
 ]
@@ -1120,55 +1179,19 @@ When we know what's contained within a contract, we can typecast the address to 
 
 
 
----
-name: reference-types-and-contract-interfaces
-.left-column[
-<h1>Control flow & syntax</h1>
-<h2>Interpreter caveats</h2>
-<h2>Function modifiers</h2>
-<h2>Contract structure</h2>
-<h2>Method visibility</h2>
-<h3>Internal and external interfaces</h3>
-<h2>Contracts calling contracts</h2>
-]
-.right-column[
-### Reference types and contract interfaces
-
-Solidity's more complex datatypes can't be passed through external contract function calls. This is the difference between the  and the *Solidity Language Interface*- the former is at an EVM level and can only understand basic memory types, the latter is at a language level and can understand the more complex structures and conveniences Solidity provides over the raw assembly instructions and type interpretations.
-
-- Internal contract methods and methods of superclasses: All Solidity datatypes allowed, accessed directly
-- Other contract methods: Only ABI datatypes allowed, accessed via `call` and `delegatecall`
-
-*However*- watch this space. I strongly suspect that if one has access to the source code of a contract then it could be applied over an address where said contract has been uploaded as a typecast in future (ie. `KnownContract(0x123ABetc)`), as is done with project contracts. 
-]
-
-???
-:TODO: 
-well, this seems to contradict that assumption (from docs):
-
-> If a contract wants to create another contract, the source code (and the binary) of the created contract has to be known to the creator. This means that cyclic creation dependencies are impossible.
-
-might be able to test this in Mix- see if source can be associated with an address manually on the testnet after clearing Mix settings
-
-
-
-
-
-
 
 ---
 name: contracts-creating-contracts
 .left-column[
-<h1>Control flow & syntax</h1>
-<h2>Interpreter caveats</h2>
-<h2>Function modifiers</h2>
-<h2>Contract structure</h2>
+<h1>Contracts calling contracts</h1>
 <h2>Method visibility</h2>
-<h3>Internal and external interfaces</h3>
-<h2>Contracts calling contracts</h2>
+<h2>Int'l & ext'l interfaces</h2>
+<h2>Reference types & i'faces</h2>
+<h2>Contract fallback functions</h2>
+<h2>Contracts as addresses</h2>
+## Contracts creating contracts
 ]
 .right-column[
-## Contracts creating contracts
 
 Note the brackets needed in order to provide a particular value to the constructor call.
 
@@ -1180,7 +1203,7 @@ contract A {
     address child;
 
     function test() {
-        child = (new B).value(10)(); //construct a new B with 10 wei
+        child = (new B).value(10)(); // construct a new B with 10 wei
     }
 }
 ```
@@ -1196,26 +1219,28 @@ contract A {
 ---
 name: library-code
 .left-column[
-<h1>Control flow & syntax</h1>
-<h2>Interpreter caveats</h2>
-<h2>Function modifiers</h2>
-<h2>Contract structure</h2>
+<h1>Contracts calling contracts</h1>
 <h2>Method visibility</h2>
-<h3>Internal and external interfaces</h3>
-<h2>Contracts calling contracts</h2>
+<h2>Int'l & ext'l interfaces</h2>
+<h2>Reference types & i'faces</h2>
+<h2>Contract fallback functions</h2>
+<h2>Contracts as addresses</h2>
+<h2>Contracts creating contracts</h2>
 ## Library code
 ]
 .right-column[
 
 A code library in Ethereum is just a contract declared with the `library` keyword instead of `contract`. Libraries can have no `storage` of their own and are always compiled to `delegatecall` by the compiler.
 
-> If you use libraries, take care that an actual external function call is performed.
+> If you use libraries, take care that an actual external function call is performed.  
+> [...]  
+> Calls to library functions look just like calls to functions of explicit base contracts (`L.f()` if `L` is the name of the library).
+>
+> <cite>http://solidity.readthedocs.io/en/latest/contracts.html#libraries</cite>
 
 .caveat[When deploying, the library will actually be deployed to a separate contract on the blockchain.] The usual external function `delegatecall` rules apply.
 
 It's important to note the importance of the `storage` keyword in function parameters for libraries. Without this keyword, functions will create a deep copy of any arguments passed in, which is not only expensive in memory consumption but also means that modifying storage directly via library methods would not be possible- which is where the power of `delegatecall` comes from.
-
-> calls to library functions look just like calls to functions of explicit base contracts (`L.f()` if `L` is the name of the library).
 
 ]
 
@@ -1234,18 +1259,19 @@ If this turns out to be the case then *All external function call rules apply.* 
 ---
 name: libraries-as-datatypes
 .left-column[
-<h1>Control flow & syntax</h1>
-<h2>Interpreter caveats</h2>
-<h2>Function modifiers</h2>
-<h2>Contract structure</h2>
+<h1>Contracts calling contracts</h1>
 <h2>Method visibility</h2>
-<h3>Internal and external interfaces</h3>
-<h2>Contracts calling contracts</h2>
+<h2>Int'l & ext'l interfaces</h2>
+<h2>Reference types & i'faces</h2>
+<h2>Contract fallback functions</h2>
+<h2>Contracts as addresses</h2>
+<h2>Contracts creating contracts</h2>
 <h2>Library code</h2>
 ### Libraries as datatypes
 ]
 .right-column[
-One useful application of libraries appears to be as extensions to the core datatypes available in the language. For example (taken from the docs), given the library:
+
+One useful application of libraries is as extensions to the core datatypes available in the language. For example (taken from the docs), given the library:
 
 ```
 library Set {
@@ -1279,8 +1305,28 @@ library Set {
 
 ]
 
-???
-:TODO: finish this
+
+
+
+
+
+
+---
+.left-column[
+<h1>Contracts calling contracts</h1>
+<h2>Method visibility</h2>
+<h2>Int'l & ext'l interfaces</h2>
+<h2>Reference types & i'faces</h2>
+<h2>Contract fallback functions</h2>
+<h2>Contracts as addresses</h2>
+<h2>Contracts creating contracts</h2>
+<h2>Library code</h2>
+<h3>Libraries as datatypes</h3>
+]
+.right-column[
+    
+:TODO:
+]
 
 
 
@@ -1289,15 +1335,7 @@ library Set {
 ---
 name: what-are-contract-events
 .left-column[
-<h1>Control flow & syntax</h1>
-<h2>Interpreter caveats</h2>
-<h2>Function modifiers</h2>
-<h2>Contract structure</h2>
-<h2>Method visibility</h2>
-<h3>Internal and external interfaces</h3>
-<h2>Contracts calling contracts</h2>
-<h2>Library code</h2>
-## What are contract events?
+# What are contract events?
 ]
 .right-column[
 
@@ -1323,19 +1361,10 @@ Consider the following situation:
 ---
 name: event-interface
 .left-column[
-<h1>Control flow & syntax</h1>
-<h2>Interpreter caveats</h2>
-<h2>Function modifiers</h2>
-<h2>Contract structure</h2>
-<h2>Method visibility</h2>
-<h3>Internal and external interfaces</h3>
-<h2>Contracts calling contracts</h2>
-<h2>Library code</h2>
-<h2>What are contract events?</h2>
+<h1>What are contract events?</h1>
+## Event interface
 ]
 .right-column[
-
-### Event interface
 
 > The main advantage of events is that they are stored in a special way on the blockchain so that it is very easy to search for them.
 >
@@ -1365,20 +1394,11 @@ Events can also be `anonymous`, which prevents the event signature being stored 
 
 
 ---
-name: event-interface-cotd
 .left-column[
-<h1>Control flow & syntax</h1>
-<h2>Interpreter caveats</h2>
-<h2>Function modifiers</h2>
-<h2>Contract structure</h2>
-<h2>Method visibility</h2>
-<h3>Internal and external interfaces</h3>
-<h2>Contracts calling contracts</h2>
-<h2>Library code</h2>
-<h2>What are contract events?</h2>
+<h1>What are contract events?</h1>
+<h2>Event interface</h2>
 ]
 .right-column[
-### Event interface (cot'd)
 
 You can mark event parameters as `indexed`, which will display them as topics in the transaction log explorer and allow searching on them. This is important in the JavaScript layer of your Dapps, as filtering the event data from the chain transaction logs is the only way to listen for particular events. Perhaps easiest explained by example...
 
@@ -1391,13 +1411,21 @@ Contrived contract source:
 contract MyBank {
     mapping(address, uint) balances;
 
-    event TransactionMade(address indexed user, uint newBalance, uint timestamp);
+    event TransactionMade(
+        address indexed user, 
+        uint newBalance, 
+        uint timestamp
+    );
     
     function makeTransaction(uint value) {
         balances[msg.sender] += value;
 
-        // note that you don't really need the timestamp, since the presumption is that this happened 'right then'
-        TransactionMade(msg.sender, balances[msg.sender], now);    
+        TransactionMade(
+            msg.sender, 
+            balances[msg.sender], 
+            // kinda redundant since we know `block.timestamp`
+            now
+        );    
     }
 }
 ```
@@ -1406,20 +1434,26 @@ contract MyBank {
 Dapp JavaScript:
 
 ```js
-var event = myContract.TransactionMade();
-event.watch((err, result) => {
-    console.log('Someone made a transaction:', result);
+myContract.TransactionMade().watch((err, result) => {
+    console.log(
+        'Someone made a transaction:', 
+        result
+    );
 });
-
-var meEvent = myContract.TransactionMade({ user: web3.eth.defaultAccount });
-meEvent.watch((err, result) => {
-    console.log('I made a transaction:', result);
+myContract.TransactionMade({ 
+    user: web3.eth.defaultAccount 
+}).watch((err, result) => {
+    console.log(
+        'I made a transaction:', 
+        result
+    );
 });
-
-// both above callbacks fire with `web3.eth.defaultAccount` and `23`
-// `event.watch` will be fired if any other user makes a transaction as well
 myContract.makeTransaction(23);
 ```
+
+Both events fire when current user makes a transaction.
+Only #1 fires if another user does it.
+
 ]
 ]
 
@@ -1464,7 +1498,7 @@ The EVM has an artificial stack depth limit of 1024 to prevent runaway contracts
 Only external function calls have an impact on stack depth. Internal functions are implemented as `JUMP` instructions within the virtual CPU. Library function calls count towards stack depth, inherited functions don't. Keep these factors in mind when designing your contracts.
 
 .suggestion[Recurse like crazy when using internal function calls.]  
-.suggestion[Avoid recursing when using external function calls], unless you have validated your code to work only under known scenarios where a necessarily shallow call-depth is expected.]
+.suggestion[Avoid recursing when using external function calls], unless you have validated your code to work only under known scenarios where a necessarily shallow call-depth is expected.
 ]
 
 ???
@@ -1592,46 +1626,13 @@ Redeploying at the same address is impossible.
 
 
 
----
-name: inline-assembly
-# Inline assembly
-
-You can write inline assembly, too! - http://solidity.readthedocs.io/en/latest/control-structures.html#inline-assembly
-
-    library VectorSum {
-        // This function is less efficient because the optimizer currently fails to
-        // remove the bounds checks in array access.
-        function sumSolidity(uint[] _data) returns (uint o_sum) {
-            for (uint i = 0; i < _data.length; ++i)
-                o_sum += _data[i];
-        }
-
-        // We know that we only access the array in bounds, so we can avoid the check.
-        // 0x20 needs to be added to an array because the first slot contains the
-        // array length.
-        function sumAsm(uint[] _data) returns (uint o_sum) {
-            for (uint i = 0; i < _data.length; ++i) {
-                assembly {
-                    o_sum := mload(add(add(_data, 0x20), i))
-                }
-            }
-        }
-    }
-
-???
-:TODO: can you do this with LLL?!
-
-
-
-
-
 
 
 ---
-name: some-real-stats-quicksort-vs-heapsort
-# Some real stats: quicksort vs. heapsort
+name: some-real-stats
+# Some real stats
 
-:TODO:
+:TODO: actually this should be a slide which references all the test contracts I've been fiddling with, presuming I get time to fiddle with them
 
 
 
@@ -1731,7 +1732,7 @@ name: short-version
 - `payOut` returns false if transferring the balance to the recipient of the split fails. I am reasonably sure this is good architecture- it allows `payOut` to be safely used on arrays of addresses to refund in bulk.
 - However, `withdrawRewardFor` throws if `rewardAccount.payOut` fails! This can cause any operation `withdrawRewardFor` is involved in to fail.
 - But, `splitDAO` is public...
-- So the attacker can use a default function in their own contract (fired when `payOut` runs `_recipient.call.value(_amount)()`) to call `splitDAO` *while the original `splitDAO` call is still running*...
+- So the attacker can use a fallback function in their own contract (fired when `payOut` runs `_recipient.call.value(_amount)()`) to call `splitDAO` *while the original `splitDAO` call is still running*...
     - `splitDAO`(2) calls `withdrawRewardFor` calls `payOut`...
     - The original call (1) to `splitDAO` has still not run `balances[msg.sender] = 0;`... so `payOut` transfers the same balance back to the attacking contract as before...
     - This continues until the artificial EVM stack depth limit is reached (1024).
@@ -1762,7 +1763,7 @@ name: guidelines-to-avoid-this-pitfall
 - Presume any call to an externally accessible contract method you define may run out of gas and fail.
 
 ???
-:TODO: why are we recommending `send` instead of `call` now? Presumably to ensure only the default function is ever called, but I don't see how this is useful when one *does* need to `call`...
+:TODO: why are we recommending `send` instead of `call` now? Presumably to ensure only the fallback function is ever called, but I don't see how this is useful when one *does* need to `call`...
 
 :TODO: some discussion of DAO framework v1 and test cases
 
@@ -1959,7 +1960,7 @@ List to come...
 - really don't want to have to do `MajoritySplittable` etc, am I doing it wrong?
 - thinking conventions... 'owner'/'purchase'/'calc' for things involving $!
 - registrar: see `dapp-bin/registry`
-- helpers for managing common default function & suicide behaviours
+- helpers for managing common fallback function & suicide behaviours
 
 
 
@@ -2011,11 +2012,12 @@ template: callout
 
 - The risks are high with any on-chain language- no software stack to act as padding for bugs.
 - Solidity is a means of direct manipulation of the blockchain database state.
-    - State is evil! Uh-oh...
-        - Recursive calling vulnerabilities happen due to errors in *ordering state manipulations*
-        - Better code analysis tools are needed
-        - Linters and unit tests need to be the norm, at minimum
-        - Better languages are needed: OCaml or Haskell-like, code as provable theorems
+    - **State is evil!** Uh-oh...
+    - Recursive calling vulnerabilities happen due to errors in *ordering state manipulations*
+    - There are **no state guarantees** when interacting with external contracts
+    - Better code analysis tools are needed
+    - Linters and unit tests need to be the norm, at minimum
+    - Better languages may be needed: OCaml or Haskell-like, code as provable theorems
 - All external function calls are untrusted and could come in from anywhere.
 - There are **absolutely no guarantees** as to another contract's state or behaviour unless cryptographically provable to be authored from a given source code.
 
@@ -2027,7 +2029,7 @@ template: callout
 ---
 template: start
 count: false
-# Thanks!
+<h1>Thanks!</h1>
 
 ???
 :TODO: Yep need more dumb pics fo sho
