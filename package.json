@@ -29,6 +29,7 @@
   "homepage": "https://github.com/pospi/solidity-intro-slides#readme",
   "dependencies": {
     "almond": "^0.3.2",
+    "highlightjs-solidity": "^1.0.0",
     "remark": "pospi/remark#wip-enhancements"
   },
   "devDependencies": {

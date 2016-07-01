@@ -10,13 +10,13 @@ import polyfills from 'remark/src/polyfills';
 import Remark from 'remark/src/remark/api';
 import RemarkHighlighter from 'remark/src/remark/highlighter';
 import styler from 'remark/src/remark/components/styler/styler';
+import extendHighlighter from 'highlightjs-solidity';
 
-import extendHighlighter from './highlighter-extensions';
 import pageContent from '../solidity-notes.md';
 
 
 polyfills.apply();
-extendHighlighter(RemarkHighlighter);
+extendHighlighter(RemarkHighlighter.engine);
 styler.styleDocument();
 
 const remark = new Remark();
