@@ -59,9 +59,9 @@ template: start
 
 <!-- Begin presentation -->
 
-# Solidity & Systems Programming on the Blockchain
+<h1>Solidity &amp; Systems Programming on the Blockchain</h1>
 
-### A knowledge remix
+<h3>A knowledge remix</h3>
 
 ---
 # Agenda
@@ -130,7 +130,7 @@ template: start
 - [In the meantime](#in-the-meantime)
 - [Contract base classes](#contract-base-classes)
 - [Function libraries](#function-libraries)
-- [Final observations:](#final-observations)
+- [Final observations](#final-observations)
 
 <!-- /MarkdownTOC -->
 ]
@@ -992,6 +992,8 @@ You can write inline assembly, too! - http://solidity.readthedocs.io/en/latest/c
         }
     }
 
+]
+
 ???
 :TODO: can you do this with LLL?!
 
@@ -1559,6 +1561,9 @@ Therefore, as a general rule functional composition is a pretty good way to go, 
 Contatenative inheritance means you won't save on chain storage costs by breaking your contracts up into smaller classes. In fact, probably quite the opposite due to the number of extra methods this architecture will likely introduce.
 
 If you're concerned about bytecode storage size, use libraries to organise your shared code instead of base contracts. Ideally base contracts should be kept as lean as possible, since they'll be duplicated every time you deploy a new derived contract that extends from them.
+
+.suggestion[Create many small, abstract base contracts for use in your projects.] Keep them decoupled from each other. Keep your inheritance graphs shallow, and broad&mdash; think of base contracts like *"mixins"* in JavaScript or *"traits"* in PHP. Use a combination of contract inheritance and function modifiers to compose more complex contracts from your base pallette.
+
 ]
 
 ???
@@ -1622,6 +1627,8 @@ Redeploying at the same address is impossible.
 
 :TODO: investigate function pointers further.. this is a thing for toggling behaviour!
 
+:TODO: investigate ways of migrating contract state.. `exportable` base contract?
+
 
 
 
@@ -1646,10 +1653,10 @@ name: misc-gotchas
 You can consider all of these a <span class="caveat">&hellip;</span>
 
 - Always call local methods in aliased form, ie. call `f()`, not `this.f()`. The former is faster as it allows pass-by-reference- _once you call between contracts, data must be copied by value_.
-- Never use `now` or `block.hash` as a source of randomness, unless you know what you are doing!
+- Never use `now` or `block.blockhash` as a source of randomness, unless you know what you are doing!
 - `now` is the time of the last block, not *really* the exact current time.
 - The constructor is removed from the contract code once it is deployed since it is only ever executed once. As such, it can't be called directly.
-- `for (var i = 0; i < arrayName.length; i++) { ... }` will runaway if your array holds more than 256 elements, because `uint8` is the smallest available datatype to hold a 0 and the variable will overflow infinitely.
+- `for (var i = 0; i < arrayName.length; i++) { ... }` **will runaway if your array holds more than 256 elements**, because `uint8` is the smallest available datatype to hold a 0 and the variable will overflow infinitely.
 - You can rely on methods being called with 2300 gas, as this is the current transaction stipend. Don't presume you'll always be allocated enough to access storage.
 
 Further reading: http://solidity.readthedocs.io/en/latest/miscellaneous.html#pitfalls
@@ -1783,10 +1790,21 @@ name: guidelines-to-avoid-this-pitfall
 ---
 <h2>More suggestions</h2>
 
-- Learn to appreciate and understand the value of "functional programming" as well as "condition-oriented programming" ([https://medium.com/@gavofyork/condition-orientated-programming-969f6ba0161a](https://medium.com/@gavofyork/condition-orientated-programming-969f6ba0161a)).
+- Learn to appreciate and understand the value of "functional programming" and how it differs from "imperative programming".
+- Write unit tests for everything.
+- Minimise dependencies between contracts and functions as much as possible.
 - Use function modifiers to abstract conditions into annotations as much as possible.
-    - Write base modifiers as pure functions which do not depend on any external state, and use functional composition to create specifics. This helps to keep modifiers generic, eg:
-    ```
+    - Write base modifiers as pure functions which do not depend on any external state, and use functional composition to create specifics. This helps to keep modifiers generic...
+
+
+
+
+
+
+---
+In this example, we've decoupled the check (`onlyBy`) from the parameter (`owner`), without creating any extra logic paths:
+
+```
 contract OwnershipModifiers {
     modifier onlyBy(address _account) {
         if (msg.sender != _account)
@@ -1806,17 +1824,15 @@ contract Owned is OwnershipModifiers {
         owner = msg.sender;
     }
 
-    function changeOwner(address _newOwner) onlyOwner {
-        owner = _newOwner;
-    }
-
     function destroy() onlyOwner {
         suicide(msg.sender);
     }
 }
-    ```
-- Write unit tests for everything.
-- Minimise dependencies between contracts and functions as much as possible.
+```
+
+This is very similar to how decorators function in Python and JavaScript ES7 or how annotations function in Java. **It allows us to functionally compose conditions without introducing bugs.**
+
+Further reading: [https://medium.com/@gavofyork/condition-orientated-programming-969f6ba0161a](https://medium.com/@gavofyork/condition-orientated-programming-969f6ba0161a)
 
 
 
@@ -2007,8 +2023,7 @@ name: function-libraries
 
 ---
 name: final-observations
-template: callout
-# Final observations:
+# Final observations
 
 - The risks are high with any on-chain language- no software stack to act as padding for bugs.
 - Solidity is a means of direct manipulation of the blockchain database state.
