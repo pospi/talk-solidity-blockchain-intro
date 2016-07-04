@@ -45,20 +45,21 @@
         /* { font-size: 0.8750em; line-height: 1.7143; margin-top: 3.4286em; margin-bottom: 0.0000em; } */
         .remark-slide-content h4 { font-size: 1.2500em; line-height: 1.2000; margin-top: 0; margin-bottom: 0; }
         .remark-slide-content h5 { font-size: 1.0000em; line-height: 1.5000; margin-top: 2.2500em; margin-bottom: 0.0000em; }
-        .remark-slide-content h1:nth-child(2),  /* :NOTE: first-child is the <header> in Remark markdown file */
-        .remark-slide-content h2:nth-child(2),
-        .remark-slide-content h3:nth-child(2),
-        .remark-slide-content h4:nth-child(2),
-        .remark-slide-content h5:nth-child(2),
+        .remark-slide-content h1:nth-child(3),  /* :NOTE: first-child is the <header> in Remark markdown file */
+        .remark-slide-content h2:nth-child(3),
+        .remark-slide-content h3:nth-child(3),
+        .remark-slide-content h4:nth-child(3),
+        .remark-slide-content h5:nth-child(3),
         .remark-slide-content h1:first-child,  /* :NOTE: we need these too for templates which wrap their own content */
         .remark-slide-content h2:first-child,
         .remark-slide-content h3:first-child,
         .remark-slide-content h4:first-child,
         .remark-slide-content h5:first-child {
-            margin-top: 0;
+            margin-top: 10px;
         }
         .remark-code, .remark-inline-code {
             font-family: 'Ubuntu Mono';
+            font-weight: normal;
             border-radius: 3px;
             font-size: 16px;
         }
@@ -79,7 +80,8 @@
         }
 
         /* general styles */
-        a, a:visited, a:hover { color: #7724ab; }
+        a, a:visited, a:hover { color: #613AE8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
 
         ::-moz-selection { background: #66019C; color: #fff; }
         ::selection { background: #66019C; color: #fff; }
@@ -126,7 +128,7 @@
         .left-column, .right-column {
             position: absolute;
             top: 2em;
-            padding: 3em 2.5em 6em 2.5em;
+            padding: 1.5em 2.5em 6em 2.5em;
         }
         .left-column {
             padding-right: 0;
@@ -186,6 +188,9 @@
             text-align: center;
         }
 
+        .fr { float: right; margin-left: 2em; }
+        .fl { float: left; margin-right: 2em; }
+
         .twocol {
             -moz-column-count: 2;
             -webkit-column-count: 2;
@@ -198,18 +203,29 @@
             column-count: 3;
         }
 
-        .caveat:before,
-        .suggestion:before {
-            content: 'caveat:';
+        .superstress {
+            color: #AF0400;
             font-weight: bold;
+        }
+
+        .caveat:before,
+        .suggestion:before,
+        .update:before,
+        .correction:before {
+            content: 'caveat:';
             margin-right: 0.5em;
             padding: 0 0.2em;
+            font-style: italic;
             background: #A31F1C;
             color: white;
         }
         .caveat {
+            font-style: normal;
             color: #830F0C;
             border-bottom: 1px solid #830F0C;
+        }
+        .caveat:before {
+            font-weight: bold;
         }
         .suggestion {
             color: #0F6718;
@@ -217,9 +233,28 @@
         }
         .suggestion:before {
             content: 'suggestion:';
-            font-style: italic;
-            font-weight: normal;
             background: #0F6718;
+        }
+        .correction {
+            color: #833F0C;
+            border-bottom: 1px solid #833F0C;
+        }
+        .update {
+            color: #444;
+        }
+        .correction:before,
+        .update:before {
+            content: 'update:';
+            font-weight: bold;
+            background: #777;
+        }
+        .correction {
+            text-decoration: line-through;
+        }
+        .correction:before {
+            content: 'correction:';
+            text-decoration: none;
+            background: #833F0C;
         }
 
         /************************* START SLIDE VARIANTS ***********************/
@@ -312,7 +347,8 @@
         footer strong {
             margin-left: -0.5em;
         }
-        footer a {
+        footer a, footer a:visited, footer a:hover {
+            color: white;
             text-decoration: none;
         }
     </style>
