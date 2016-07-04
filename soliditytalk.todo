@@ -1,9 +1,10 @@
 Slide deck:
- ☐ cite quotes
- ☐ contrib link @ start
+ ☐ contribution link for pull reqs @ start
  ☐ setup script for cloning libraries: get-example-libs.sh
-☐ go through todos, work out images & demo code needed:
-  #p35
+ ☐ https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s
+ ☐ Solidity 2.0 roadmap
+ ☐ https://ethereum.stackexchange.com/questions/1134/what-design-patterns-are-appropriate-for-data-structure-modification-within-ethe?newreg=c176baafe7254727b892b6c257938950
+ ☐ http://ethereum.stackexchange.com/questions/2159/guidelines-for-designing-contracts-to-handle-bugfixes/2162#2162
 images:
   ☐ <!--pic01--> chain / EVM / solidity system diagram
   ☐ <!--pic02--> same again, but with LLL & Serpent added for good measure
@@ -12,43 +13,55 @@ images:
     ☐ include where context coercion happens
   ☐ <!--picIO--> software layers in a web app vs blockchain (large system complexity buffering)
   ☐ <!--picABI--> ABI/Solidity contract interfaces diagram
+  ☐ DAO hack pics walkthrough
+  ☐ <!--pic-SL--> reentrancy vs. "solar storm"
   ☐ work out convention colours for imagery. WHAT NEEDS DRAWING?!
 verify stuff:
   ☐ is contract storage & bytecode same block of memory or can storage vary?
+  ☐ test "contrived contract source" example
+  ☐ test "contract switch"
+  ☐ can I recommend to always access state vars via `this`? no difference in cost?
+  ☐ test if name collisions do in fact happen when inheriting classes with same methods
+  ☐ "guidelines to avoid"- check if ref vars update in response to other contracts mutating them
   ☐ write test code to explain behaviour of function `storage` vars (persist after transaction?)
   ☐ Is storage referenced by inner vars modified by mutations stemming from calls to external contract functions?
   ☐ check that fallback funcs are always public
   ☐ check bit math for manipulating byte arrays and add that if can be bothered
+  ☐ can you assign functions to state vars?
 demo code:
   required:
     ☐ address typecasting
   optional:
-    ☐ passing a string over the ABI
+    ☐ no example of libs being used without `using`
     ☐ audit function libraries and pull / link useful ones
       - ABI encoders / decoders
       - ADTs along the lines of the C STL
+    ☐ passing a string over the ABI
     ☐ saving some data using web stack vs ethereum
+    ☐ quicksort vs. heapsort stats
 filler:
   ☐ words of warning
   ☐ "Best places to get started"
   ✔ "Blockchain not always best answer" @done (16-07-04 20:58)
   ✔ types intro @done (16-07-04 20:58)
   ☐ Contracts calling contracts (scary time)
+  ☐ Enough nuts and bolts, how should we write these things?!
 
 
 Research:
  ☐ go through Eris tutorial info
  ☐ unanswered questions:
    ☐ make some inter-contract method calls and see what the caveats are
-   ☐ deploy another DAO on the testnet, wipe it from Mix, attempt to make a contract that creates new instances of it
-   - Test if/how fixed point rounding works
+   ☐ deploy another DAO on the testnet, wipe it from Mix, attempt to make a contract that:
+    ☐ creates new instances of it
+    ☐ interacts with its public methods via `delegatecall` to use it as a library
+    ☐ can I subclass it? re-use its `internal` methods?
+   ☐ Test if/how fixed point rounding works[
  - Design patterns
    - http://solidity.readthedocs.io/en/latest/common-patterns.html
  - Unit testing:
    [Find a framework that outputs useful benchmarking data]
    ☐ get dapple setup and see how unit testing operates
-   - gas cost (indicator of computational complexity / electrical cost; estimated and actual)
-   - memory & storage usage (indicator of long-term storage efficiency)
    - See if sol-unit / sunit is runnable and try to plug something in to it
  - Benchmark various techniques to work out what's best
    At what rate does gas cost increase? In proportion to what?
@@ -59,9 +72,7 @@ Research:
    - Understand inheritance: concatenative or delegative?
    - see what happens when you try to run a function on a user account address
 
- ☐ Is it possible, or will it be possible, to bind Solidity types and contract source code to bytecode for debugging purposes, for external contracts someday? or now? can i hack mix?
  ☐ investigate generation of call-flow graphs
-
  - Interfacing with IPFS?
 
 Useful services:
