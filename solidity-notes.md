@@ -119,8 +119,8 @@ template: start
     - [Mapping vs. Array](#mapping-vs-array)
     - [Composition or inheritance](#composition-or-inheritance)
     - [Delegates](#delegates)
+    - [Function pointers](#function-pointers)
     - [Contract design patterns](#contract-design-patterns)
-- [Some real stats](#some-real-stats)
 - [Misc gotchas](#misc-gotchas)
 - [TheDAO hack: what went wrong?](#thedao-hack-what-went-wrong)
     - [Short version](#short-version)
@@ -1522,7 +1522,7 @@ We can do this now within a contract in order to augment base types...
 
     import { Set } from "Set";
 
-    contract  C {
+    contract C {
         using Set for uint[];
         uint[] knownValues;
 
@@ -1705,7 +1705,7 @@ name: iteration-vs-recursion
 ]
 .right-column[
 
-The EVM has an artificial stack depth limit of 1024 to prevent runaway contracts from executing recursion-based exploits. This safeguard is the only reason The DAO wasn't *completely* drained, so it's a good thing to have. Unfortunately it also essentially obviates recursion-based language design... unless a very interesting compiler is built!
+The EVM has an artificial stack depth limit of 1024 to prevent runaway contracts from executing recursion-based exploits. This safeguard is the only reason The DAO wasn't *completely* drained, so it's a good thing to have. Unfortunately to some degree it also essentially obviates recursion-based language design... unless a very interesting compiler is built!
 
 Only external function calls have an impact on stack depth. Internal functions are implemented as `JUMP` instructions within the virtual CPU. Library function calls count towards stack depth, inherited functions don't. Keep these factors in mind when designing your contracts.
 
@@ -1738,12 +1738,17 @@ Remember that `mapping` can *only* be used for `storage` variables.
 
 > The main advantage of an array is for iteration. But the iteration needs to be limited, not only for speed, but potentially for security. As an extreme example, a permanent Denial-of-Service could be inflicted on a contract if its service involves iterating over an array that an attacker can fill up, such that the cost of iteration and operation permanently exceeds the block gas limit.
 
-Unless you need to iterate, you don't need an array (mappings are sparse).
+Unless you need to iterate, you don't need an array (mappings are sparse).  
+.caveat[Long-running iteration is a possible attack vector.]
 
 > A comment by @PaulS suggests that iterating an array of length 50 is relatively efficient; testing the use cases is advised to also identify details such as desired or acceptable gas costs.
 
 ]
 
+???
+Summary: 
+
+- arrays add an extra byte but allow you to iterate; use mappings where you can.
 
 
 
@@ -1795,8 +1800,50 @@ name: delegates
 ]
 .right-column[
 
-`delegatecall` is the solution for structuring your pure library code: allowing you to put common code in places and run it without polluting method namespace of contracts you're creating. Note that you don't even have to use the method manually- when you use Libraries with Mix, the IDE will automatically link your contracts and allow you to write the call as if it were a normal contract within your project.
+`delegatecall` is the solution for structuring your pure library code: allowing you to put common code in places and run it without polluting method namespace of contracts you're creating. Note that mostly you won't even have to use the method manually- when you use Libraries with Mix, the IDE will automatically link your contracts and allow you to write the call as if it were a normal contract within your project.
+
+It's worth noting that delegates and libraries are the only ways to reuse code between contracts at a CPU level. All other conveniences are simply ways of organising your code before it's compiled into one glorious blob.
+
 ]
+
+???
+:TODO: update this slide when determined whether manually linking library contracts is doable.
+
+
+
+
+
+
+---
+name: function-pointers
+.left-column[
+<h1>Code best-practises</h1>
+<h2>Iteration vs recursion</h2>
+<h2>Mapping vs. Array</h2>
+<h2>Composition or inheritance</h2>
+<h2>Delegates</h2>
+## Function pointers
+]
+.right-column[
+
+Though these are noted as a *'quirk'* in the documentation, function pointers might be extremely useful for those used to languages with functions as first-class citizens. It's not quite the same, but you can get some of the way there...
+
+    contract switch {
+        function runOperation(bool useB) public returns(uint z) {
+            var f = operationA;
+            if (useB) f = operationB;
+            return f(x);
+        }
+
+        function operationA(uint x) internal returns(uint z);
+        function operationB(uint x) internal returns(uint z);
+    }
+
+]
+
+???
+:TODO: finish this
+:TODO: can I recommend to always access state vars via `this`? no difference in cost?
 
 
 
@@ -1811,6 +1858,7 @@ name: contract-design-patterns
 <h2>Mapping vs. Array</h2>
 <h2>Composition or inheritance</h2>
 <h2>Delegates</h2>
+<h2>Function pointers</h2>
 ## Contract design patterns
 ]
 .right-column[
@@ -1838,18 +1886,6 @@ Redeploying at the same address is impossible.
 :TODO: investigate function pointers further.. this is a thing for toggling behaviour!
 
 :TODO: investigate ways of migrating contract state.. `exportable` base contract?
-
-
-
-
-
-
-
----
-name: some-real-stats
-# Some real stats
-
-:TODO: actually this should be a slide which references all the test contracts I've been fiddling with, presuming I get time to fiddle with them
 
 
 
@@ -1959,6 +1995,12 @@ name: short-version
 ???
 :TODO: yeah need more here, split this into stages with diagrams
 
+https://pdaian.com/blog/chasing-the-dao-attackers-wake/  
+http://vessenes.com/more-ethereum-attacks-race-to-empty-is-the-real-deal/  
+http://hackingdistributed.com/2016/06/16/scanning-live-ethereum-contracts-for-bugs/  
+http://vessenes.com/ethereum-griefing-wallets-send-w-throw-considered-harmful/  
+http://vessenes.com/deconstructing-thedao-attack-a-brief-code-tour/
+
 
 
 
@@ -1969,37 +2011,31 @@ name: short-version
 name: guidelines-to-avoid-this-pitfall
 ## Guidelines to avoid this pitfall
 
-- Ensure you update your contract's own internal state **before** interacting with any external addresses. 
-- If these interactions fail, handle the effect in a way which **does not interfere** with any other address being processed.
+- Ensure you update your contract's own internal state **before** interacting with any external addresses.
+- If these interactions fail, handle the effect in a way which **does not interfere** with **any other address** being processed.
 - Presume any methods in your contract other than `internal` and `private` ones will be called by contracts other than those you expect.
-- Also never presume that an address === a user. An address does not guarantee a real person.
-- Use `send` instead of `call` wherever possible. Even then, ensure you handle failures correctly, and again, update your contract's own state **first**.
+- **Always** specify a gas amount when calling other contracts (which prevents them being attackable by sending any amount of gas).
+- Also never presume that an address implies a user. An address does not guarantee a real person.
+- Use `send` instead of `call` wherever possible. Even then, ensure you **handle failures correctly**, and again, update your contract's own state **first**.
   > send is safer to use since by default it doesn't forward any gas, so the receiver's fallback function can only emit events.
   >
   > <cite>http://ethereum.stackexchange.com/a/6474/2665</cite>
 - Presume any call to an externally accessible contract method you define may run out of gas and fail.
 
+Always remember, there are:
+
+- .superstress[NO STATE GUARANTEES] outside of the contracts in your project
+- .superstress[NO STATE GUARANTEES] once you interact with any outside contract
+
+Imagine it as if another thread might come in and modify your memory at any time. If the hash of the contract you're interacting with matches some source, then you can predict it just fine. If not- all bets are off and *any* of your externally accessible methods may be called.
+
 ???
-:TODO: why are we recommending `send` instead of `call` now? Presumably to ensure only the fallback function is ever called, but I don't see how this is useful when one *does* need to `call`...
+"Specify a gas amount"- because an external contract might send heaps of gas into a method in order to be able to recursively call back into your own contract many times over. Limiting gas reduces this risk.
 
 :TODO: some discussion of DAO framework v1 and test cases
 
-:TODO: merge these in to above:
-- The max call stack size is 1024. .caveat[Be sure to correctly handle the return value of `send`!]  
-  http://hackingdistributed.com/2016/06/16/scanning-live-ethereum-contracts-for-bugs/  
-  http://vessenes.com/ethereum-griefing-wallets-send-w-throw-considered-harmful/  
-  http://vessenes.com/deconstructing-thedao-attack-a-brief-code-tour/
-- manage your internal contract's state BEFORE calling other contracts. If they fail it's then THEIR problem, not yours.
-- ALWAYS specify a gas amount when calling other contracts (which prevents them being attackable by sending any amount of gas)
+:TODO: check if ref vars update in response to other contracts mutating them
 
-
-Other observations for this bit:
-
-- NO STATE GUARANTEES outside of your contract
-- NO STATE GUARANTEES once you interact with ANY other contract
-    - :TODO: check if ref vars update in response to other contracts mutating them
-    - this is kinda like random thread access in a poorly threaded language
-    - if the contract hash matches some source, then OK
 
 
 
@@ -2008,12 +2044,14 @@ Other observations for this bit:
 ---
 <h2>More suggestions</h2>
 
-- Learn to appreciate and understand the value of "functional programming" and how it differs from "imperative programming".
 - Write unit tests for everything.
 - Minimise dependencies between contracts and functions as much as possible.
 - Use function modifiers to abstract conditions into annotations as much as possible.
+- Learn to appreciate and understand the value of "functional programming" and how it differs from "imperative programming".
 
-
+.center[
+<img src="res/randart/functional-squirrel.jpg" />
+]
 
 
 
@@ -2022,30 +2060,23 @@ Other observations for this bit:
 name: other-vulnerabilities
 # Other 'vulnerabilities'
 
-*"Solar Storm"* is not a real thing, really. This is just how you'd want programs to run, sometimes.
+Headlines like "[Solarstorm: A security exploit with Ethereum’s Solidity language, not just the DAO](https://blog.blockstack.org/solar-storm-a-serious-security-exploit-with-ethereum-not-just-the-dao-a03d797d98fa)" are very catchy but don't amount to much when one stops to think about how computers operate. This is just how you'd want programs to run, sometimes. Sometimes a function calls a function in another class that calls back to the object that started it all. It's not even uncommon. So to disallow *that* would be to disallow, you know, writing code. 
 
-Let's all calm down for a minute...
+If you're gonna be writing code, you're gonna get some rat faeces in there. *Everything is Terrible*&trade;
 
-- (19:01:52) pospi: depends how you want to look at it. programmer error, really is what I'd call it
-- (19:02:25) pospi: (as in, Solidity programming errors with unexpected side-effects)
-- (19:03:06) pospi: which is; not the fault of the Eth network / EVM / Blockchain any more than shitty Microsoft code running your kernel and fucking up your disk is your computer manufacturer's fault..
-- (19:04:12) pospi: but the point still stands- should the network correct & account for these things at a protocol level, or are there cases where the functionality these bugs expose is in fact critical for the funcctioning of the whole platform?
-- (19:04:25) pospi: and if that's the case- then you have a rather awkward catch-22 situation at a core system level
-- (19:04:31) pospi: but! I dont really think it's going to be an issue, personally
-- (19:04:56) pospi: people are pretty smart, and there's a lot of pretty smart people freaking out right now about ways to not have their money evaporate into thin air
-- (19:05:47) pospi: so I think we can expect to see fixes for this kind of thing closer to the core in future (similar workarounds to the concept of "gas" itself), but for now people are just going to have to write better code to not get caught out by these kinds of attacks
-- (19:06:09) pospi: and since theyre so well known now, then probably it's not going to be a thing bad actors can take advantage for long
+So let's all calm down for a minute, and think about all these things together.
+
+1. A logic error in a software program does not mean the language is broken.
+2. A vulnerability in a language does not mean the underlying CPU is broken.
+3. A language which allows sloppy code need not be doomed if good tooling can be built around it... but a language which definitively prevents sloppy code is always going to be better.
 
 ???
-:TODO: diagrams of the two vulnerabilities discussed
-
-:TODO: flesh out to a take on current panic vs. reality of issue
+:TODO: diagrams of the two vulnerabilities discussed <!--pic-SL-->
 
 :TODO: checkCaller method decorator thing to ensure caller is an instance of something else?
 
-:TODO: Solar Storm image
-
-
+But the point still stands- should the network correct & account for these things at a protocol level, or are there cases where the functionality these bugs expose is in fact critical for the funcctioning of the whole platform?
+And if that's the case- then you have a rather awkward catch-22 situation at a core system level.
 
 
 
@@ -2055,48 +2086,22 @@ name: towards-a-better-language
 # Towards a better language?
 
     
-http://vessenes.com/deconstructing-thedao-attack-a-brief-code-tour/
-
-- A purely functional language with a rich type system is needed. If we can't have that right now (see *"The FunArg Problem"*), we need tools to write more bug-free code in the languages we have.
-- All calls that send to untrusted address should have a gas limit
-- Balances should be reduced before a send, not after one
-- Events should probably have a Log prepended to their name.
-- The splitDAO function should be mutexed and keep permanent track of the status of each possible splitter, not just through token tracking.
-
-
-https://pdaian.com/blog/chasing-the-dao-attackers-wake/
-
-> As a recommendation, do not call external contract code in your contract using Solidity’s call construct, ever if you can avoid it.  If you can’t, do it last and understand that you lose all guarantees as to the program flow of your contract at that point.
-
-???
-example @ http://vessenes.com/more-ethereum-attacks-race-to-empty-is-the-real-deal/
-
-:TODO:
-https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s   (discussion on proof-based languages for smart contracts)
-
-http://themerkle.com/dao-attack-nullified-using-synereos-smart-contracting-language/ (Rholang)
-
-Solidity 2.0 roadmap
-
-
-
-
-
----
-<h1>Towards a better language?</h1>
+A purely functional language with a rich type system is needed. If we can't have that right now (see *"The FunArg Problem"*), we need tools to write more bug-free code in the languages we have. The Synero network seems to be making progress in this area with the programming language Rho.
 
 Having written C, C++ and Java but also having written JavaScript using functional methodologies it's easy to see how Solidity *could* be leveraged to build rock-solid Dapps. It's also easy to see how you can shoot yourself in the foot with it. Some code smells we seem to be repeating here:
 
-- *"Function modifiers"* in Solidity are basically like *"mixins"* in JavaScript. The only thing that differentiates them is the 
-- OO-style inheritance and external library behaviour immediately makes reusing code efficiently cumbersome.
+- Contracts in Solidity are basically like *"mixins"* in JavaScript. Without well-named base classes, name collisions and cluttered contract namespaces seem inevitable.
 - Implicit state access between scope is always a bad idea. Always. PHP is the only imperative language I've used that manages lexical scope 'safely'.
 - Being super strict with types and then automatically typecasting a complex `account` object over a 160-bit integer seems like an odd choice :/
 - Creating a paradigm where monolithic contracts are the norm for efficiency reasons is bad for code quality and logic isolation reasons. I don't know if this is happening or what the solution is, but that mindset should be avoided...
 
 ???
-:TODO: finish slide.
+:TODO: test if name collisions do in fact happen
 
-Lib funcs allow `using` / `for` to avoid the mixin collision issue, but functions from parent classes don't appear to?
+:TODO:
+https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s   (discussion on proof-based languages for smart contracts)
+
+Solidity 2.0 roadmap
 
 
 
