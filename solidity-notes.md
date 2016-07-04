@@ -128,8 +128,9 @@ template: start
 - [Other 'vulnerabilities'](#other-vulnerabilities)
 - [Towards a better language?](#towards-a-better-language)
 - [In the meantime](#in-the-meantime)
-- [Contract base classes](#contract-base-classes)
-- [Function libraries](#function-libraries)
+    - [Unit testing frameworks](#unit-testing-frameworks)
+    - [Contract base classes](#contract-base-classes)
+    - [Function libraries](#function-libraries)
 - [Final observations](#final-observations)
 
 <!-- /MarkdownTOC -->
@@ -1433,8 +1434,110 @@ library Set {
 <h3>Libraries as datatypes</h3>
 ]
 .right-column[
+
+We can import the `Set` type and use its members in derived classes...
+
+    import { Set } from "Set";
+
+    contract C {
+        Set.Data knownValues;
+
+        function register(uint value) {
+            // The library functions can be called without a
+            // specific instance of the library, since the
+            // "instance" will be the current contract.
+            if (!Set.insert(knownValues, value))
+                throw;
+        }
+        // In this contract, we can also directly access knownValues.flags, if we want.
+    }
     
-:TODO:
+]
+
+
+
+
+
+
+
+---
+.left-column[
+<h1>Contracts calling contracts</h1>
+<h2>Method visibility</h2>
+<h2>Int'l & ext'l interfaces</h2>
+<h2>Reference types & i'faces</h2>
+<h2>Contract fallback functions</h2>
+<h2>Contracts as addresses</h2>
+<h2>Contracts creating contracts</h2>
+<h2>Library code</h2>
+<h3>Libraries as datatypes</h3>
+]
+.right-column[
+
+...but we can also import the library's contents directly onto the data structure using, err... `using` syntax:
+
+    import { Set } from "Set";
+
+    contract C {
+        using Set for Set.Data;
+        Set.Data knownValues;
+
+        function register(uint value) {
+            // Here, all variables of type Set.Data have
+            // corresponding member functions.
+            // The following function call is identical to
+            // Set.insert(knownValues, value)
+            if (!knownValues.insert(value))
+                throw;
+        }
+    }
+
+This is a strange-looking control inversion whereby we copy all the library functions onto the destination type; and the context will be passed as the first parameter. It's basically equivalent to currying all the member functions of library `Set` with the type `Set.Data` as the first parameter.
+
+You'll notice I highlighted `self` as a keyword in the earlier library methods&mdash; this seems like a good convention to enforce when using libraries in this manner.
+
+]
+
+
+
+
+
+
+
+---
+.left-column[
+<h1>Contracts calling contracts</h1>
+<h2>Method visibility</h2>
+<h2>Int'l & ext'l interfaces</h2>
+<h2>Reference types & i'faces</h2>
+<h2>Contract fallback functions</h2>
+<h2>Contracts as addresses</h2>
+<h2>Contracts creating contracts</h2>
+<h2>Library code</h2>
+<h3>Libraries as datatypes</h3>
+]
+.right-column[
+
+We can do this now within a contract in order to augment base types...
+
+    import { Set } from "Set";
+
+    contract  C {
+        using Set for uint[];
+        uint[] knownValues;
+
+        function register(uint value) {
+            // The following function call is STILL identical to
+            // Set.insert(knownValues, value)
+            if (!knownValues.insert(value))
+                throw;
+        }
+    }
+
+Note that in future the `using` declaration may well be lifted to global scope in order to allow project-wide dynamic extension of the built-in types.
+
+...none of this sounds like an especially good idea to me - didn't we learn our lesson with extending built-in JavaScript prototypes? **If, however** the plan is to enable long-term extension of the language in the same way as modern JavaScript features like `Promise` can be polyfilled in older environments&mdash; well then there are interesting times ahead.
+
 ]
 
 

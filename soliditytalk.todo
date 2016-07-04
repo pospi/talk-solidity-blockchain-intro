@@ -22,7 +22,6 @@ verify stuff:
 demo code:
   required:
     ☐ address typecasting
-    ☐ finish Set library example
   optional:
     ☐ passing a string over the ABI
     ☐ audit function libraries and pull / link useful ones
