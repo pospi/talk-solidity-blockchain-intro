@@ -200,15 +200,19 @@
         }
 
         .caveat:before,
-        .suggestion:before {
+        .suggestion:before,
+        .update:before,
+        .correction:before {
             content: 'caveat:';
-            font-weight: bold;
             margin-right: 0.5em;
             padding: 0 0.2em;
+            font-style: italic;
             background: #A31F1C;
             color: white;
         }
         .caveat {
+            font-weight: bold;
+            font-style: normal;
             color: #830F0C;
             border-bottom: 1px solid #830F0C;
         }
@@ -218,9 +222,28 @@
         }
         .suggestion:before {
             content: 'suggestion:';
-            font-style: italic;
-            font-weight: normal;
             background: #0F6718;
+        }
+        .correction {
+            color: #833F0C;
+            border-bottom: 1px solid #833F0C;
+        }
+        .update {
+            color: #444;
+        }
+        .correction:before,
+        .update:before {
+            content: 'update:';
+            font-weight: bold;
+            background: #777;
+        }
+        .correction {
+            text-decoration: line-through;
+        }
+        .correction:before {
+            content: 'correction:';
+            text-decoration: none;
+            background: #833F0C;
         }
 
         /************************* START SLIDE VARIANTS ***********************/
