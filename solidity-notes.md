@@ -2090,6 +2090,7 @@ Having written C, C++ and Java but also having written JavaScript using function
 - *"Function modifiers"* in Solidity are basically like *"mixins"* in JavaScript. The only thing that differentiates them is the 
 - OO-style inheritance and external library behaviour immediately makes reusing code efficiently cumbersome.
 - Implicit state access between scope is always a bad idea. Always. PHP is the only imperative language I've used that manages lexical scope 'safely'.
+- Being super strict with types and then automatically typecasting a complex `account` object over a 160-bit integer seems like an odd choice :/
 - Creating a paradigm where monolithic contracts are the norm for efficiency reasons is bad for code quality and logic isolation reasons. I don't know if this is happening or what the solution is, but that mindset should be avoided...
 
 ???
@@ -2110,16 +2111,37 @@ name: in-the-meantime
 
 For now, unit tests and better code analysis tools are important. If we can write error-free code in JavaScript using linters and test runners then we can do it here, too... let's just not forget: all software is terrible and **all risks are amplified**.
 
+
+
+
+
+
+
+---
+name: unit-testing-frameworks
+## Unit testing frameworks
+
+> There are many ways to divide tests up. I tend to divide them into different “tiers”.
+> 
+> The first tier of tests is contract-to-contract. It involves creating a test-contract that calls the “testee” contract and processes the results. Any test-accounts that are needed would be created inside the test contracts.
+> 
+> The second tier would be creating a number of different accounts (through the blockchain client), deploy the contract, and use the test-accounts to transact with the contract. These accounts would all be on the same machine, using the same node.
+> 
+> The third tier would be setting accounts up on different machines, and do the transactions over the net.
+>
+> <cite>https://docs.erisindustries.com/tutorials/solidity/solidity-4/</cite>
+
 https://github.com/smartcontractproduction/sol-unit
 - Simulates executing using the JavaScript VM https://github.com/ethereumjs/ethereumjs-vm
 - Interface is a base `Test` contract providing assertion methods to be extended from, which should create instances of your testee contracts internally in order to run its tests.
 
 https://github.com/androlo/sol-tester
 
-???
-:TODO: dapple test suite
-
 https://github.com/nexusdev/dapple/blob/master/doc/test.md
+
+???
+:TODO: finish this
+:TODO: investigate dapple test suite
 
 
 
@@ -2129,12 +2151,31 @@ https://github.com/nexusdev/dapple/blob/master/doc/test.md
 
 ---
 name: contract-base-classes
-# Contract base classes 
+## Contract base classes 
 
 List to come...
 
 ???
-:TODO: 
+:TODO: audit this stuff again, get more specific links
+
+- https://github.com/Arachnid/ens - Ethereum Name Service
+- https://github.com/Arachnid/solidity-stringutils
+- https://github.com/axic/density
+- https://github.com/axic/etherboard
+- https://github.com/chriseth/solidity-examples
+- https://github.com/dadaista/bitshelter
+- https://github.com/emailgregn/contracts
+- https://github.com/fivedogit/solidity-baby-steps/
+- https://github.com/FrankHold/DApp_SyntheticTrader
+- https://github.com/JeffreyBPetersen/contract-testing
+- https://github.com/JeffreyBPetersen/data-sharing-contracts
+- https://github.com/nexusdev/dappsys
+- https://github.com/nickfranklinuk/canary
+- https://github.com/phillyfan1138/DArtist
+- https://github.com/smartcontractproduction/dao
+- https://github.com/zmitton/ethereum_escrow
+
+......
 
 - `Destructible`  
   (fun `destroy`)
@@ -2163,7 +2204,7 @@ List to come...
 
 ---
 name: function-libraries
-# Function libraries
+## Function libraries
 
 - `CallProxy` (helper)  
   (fun `setCallTarget(account)`)  
@@ -2177,24 +2218,6 @@ name: function-libraries
 - find a well unit-tested storage framework (or make one)
 - ADTs for efficient storage
 - ABI encoders & decoders
-- audit this stuff again, get more specific links
-
-- https://github.com/Arachnid/ens - Ethereum Name Service
-- https://github.com/Arachnid/solidity-stringutils
-- https://github.com/axic/density
-- https://github.com/axic/etherboard
-- https://github.com/chriseth/solidity-examples
-- https://github.com/dadaista/bitshelter
-- https://github.com/emailgregn/contracts
-- https://github.com/fivedogit/solidity-baby-steps/
-- https://github.com/FrankHold/DApp_SyntheticTrader
-- https://github.com/JeffreyBPetersen/contract-testing
-- https://github.com/JeffreyBPetersen/data-sharing-contracts
-- https://github.com/nexusdev/dappsys
-- https://github.com/nickfranklinuk/canary
-- https://github.com/phillyfan1138/DArtist
-- https://github.com/smartcontractproduction/dao
-- https://github.com/zmitton/ethereum_escrow
 
 <sub>*<em>Please note: you can grab all these by running `./get-example-libs.sh` after cloning this repository.</em></sub>
 
