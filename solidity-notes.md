@@ -2114,7 +2114,7 @@ Solidity 2.0 roadmap
 name: in-the-meantime
 # In the meantime
 
-For now, unit tests and better code analysis tools are important. If we can write error-free code in JavaScript using linters and test runners then we can do it here, too... let's just not forget: all software is terrible and **all risks are amplified**.
+For now, unit tests and better code analysis tools are important. If we can write error-free code in JavaScript using linters and test runners then we can do it here, too... let's just not forget: all software is terrible and .superstress[all risks are amplified].
 
 
 
@@ -2241,12 +2241,10 @@ name: final-observations
     - There are **no state guarantees** when interacting with external contracts
     - Better code analysis tools are needed
     - Linters and unit tests need to be the norm, at minimum
-    - Better languages may be needed: OCaml or Haskell-like, code as provable theorems
+    - Better languages may be needed: OCaml or Haskell-like, code as provable theorems- see Coq (OCaml) or Agda (Haskell)
 - All external function calls are untrusted and could come in from anywhere.
 - There are **absolutely no guarantees** as to another contract's state or behaviour unless cryptographically provable to be authored from a given source code.
 
-???
-:TODO: mention Coq as theorem prover
 
 
 
