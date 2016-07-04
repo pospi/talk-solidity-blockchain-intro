@@ -90,6 +90,7 @@ template: start
     - [Reference types](#reference-types)
         - [Data location](#data-location)
         - [Handling Data location](#handling-data-location)
+        - [No I/O necessary](#no-io-necessary)
     - [Arrays](#arrays)
         - [Using arrays](#using-arrays)
         - [Array caveats](#array-caveats)
@@ -150,7 +151,7 @@ From time to time, I've used some labels to try to highlight things that are imp
 - .suggestion[Suggestions] - my own opinionated suggestions, based on my current research and 12 years as a software engineer.  
   <sub>(whatever you think that's worth :p)</sub>
 
-I found good tutorial material for Solidity was rather scarce, so I may as well keep these notes up to date somewhere. 
+I found good tutorial material for Solidity was rather scarce, so I may as well keep these notes up to date somewhere (at least for Solidity 1.0). 
 
 - .update[Updates] - anything new added after presenting this for the reals. Feel free to submit pull requests at  
   https://github.com/pospi/talk-solidity-blockchain-intro.
@@ -207,6 +208,11 @@ All compile to EVM bytecode. Solidity was not the first EVM-compiled language, a
 ...and it may not be the best tool for the job&mdash; see *"The Great DAO Hack"*! We'll come back to this later...
 
 
+???
+
+:TODO: picture with other languages in it <!--pic02-->
+
+
 
 
 
@@ -238,9 +244,32 @@ function learnSmartContractDevWhenReady(dev, startLearningSolidity) {
 }
 ```
 
+
+
+
+---
+count: false
+<h1>Srysly tho</h1>
+
+In terms of this simple JavaScript snippet:
+
+```js
+var a = new Array(100);
+a.push(12);
+```
+
+What is the in-memory length of the array `a` after the script runs?
+
 ???
 
-:TODO: more stuff about buffer of a larger system between user input and storage
+wait for iiiit...
+
+
+
+--
+count: false
+
+If you didn't answer `200`, and looking up the explanation as to *why* surprised you or was difficult to understand in any way, then Solidity is not yet for you! (;
 
 
 
@@ -270,21 +299,30 @@ name: best-places-to-get-started
 name: micro-optimisations-are-important
 # Micro-optimisations are important
 
-Pre-increment vs. post-increment, `for` vs `foreach`, references vs. copies: all those arguments we gave up on years ago are back and more important than ever. Why?
+Like .superstress[really important]. Pre-increment vs. post-increment, *'for'* vs *'foreach'*, references vs. copies: all those arguments we gave up on years ago are back and more relevant than ever. Why?
 
-<ul style="font-weight: bold;">
-    <li>Clock cycles cost ether and make slow code more expensive to run.</li>
-    <li>Inefficient storage causes blockchain bloat and makes it less practical for everyone to sync.</li>
-    <li>
-        Computation costs electricity and creates hundreds of millions of tonnes of CO<sub>2</sub> every year.<br />
-        <sub><em>(
-            source: 
-            <a href="http://www.coindesk.com/microscope-economic-environmental-costs-bitcoin-mining/">
-                http://www.coindesk.com/microscope-economic-environmental-costs-bitcoin-mining/
-            </a>
-        )</em></sub>
-    </li>
-</ul>
+.superstress[Clock cycles cost ether and make slow code more expensive to run.]
+
+&nbsp; *Why would I use your code if it costs me more?*
+
+.superstress[Inefficient storage causes blockchain bloat and makes it less practical for everyone to sync.]
+
+&nbsp; *Why would I use Ethereum if I need a 20TB hard drive to run a full node?*  
+&nbsp; *Why would I buy in to a network that big mining pools have a monopoly on?* etc
+
+.superstress[Computation costs electricity and creates hundreds of millions of tonnes of CO<sub>2</sub> every year.\*]
+
+&nbsp; *Why would we all keep running a network that's killing the planet?*  
+
+<br /><br /><br /><br />*<sub><em>No, really... look it up. Start here: http://www.coindesk.com/microscope-economic-environmental-costs-bitcoin-mining/</em></sub>
+
+???
+
+Worth stressing that environmental impact is something that not many people are discussing or even openly acknowledging, and that needs to change.
+
+Also that in no way do any future optimisations or improvements make this less true. When you get down to the basic physics of things, burning energy is burning energy; and we don't have enough of it for everyone right now.
+
+Eth 2.0 / proof of stake, Peercoin, Litecoin & even Ripple (despite its political shortcomings) are great examples of where things should be moving.
 
 
 
@@ -298,11 +336,15 @@ name: quantifying-efficiency
 
 Three metrics: gas cost (in `wei`), reserved storage size (in `bytes`) & bytecode size (also measurable in `bytes`). Note that contract storage is statically allocated *once* at the time you deploy a contract and its size never changes thereafter, so some interfaces may give you back a single value for *'contract size'* at the time of compilation.
 
+
+--
+count: false
+
 ***Relative importance: gas cost > storage size > bytecode size.***
 
 In general, you will want to prioritise architectural decisions in this order. Note that performance (in terms of speed) should **not** be a concern to you. *"CPU-intensive"* in this environment means on the order of sorting an array of more than 50 elements&mdash; not much horsepower at all!
 
-- Prioritise the gas cost of interacting with your contracts above all else. Some statisticians have claimed that a single bitcoin transaction causes as much CO<sub>2</sub> pollution as keeping a car on the road for *3 days*. Remember that all computation costs energy and that your effects here are amplified drastically by the size of the network.
+- .suggestion[Prioritise the gas cost of interacting with your contracts above all else.] Some statisticians have claimed that a single bitcoin transaction causes as much CO<sub>2</sub> pollution as keeping a car on the road for *3 days*. Remember that all computation costs energy and that your effects here are amplified drastically by the size of the network.
 - Storage and bytecode size are equivalent priorities, but storage is more under your control:
     - Be dilligent about utilising contract storage variables fully and allocating as little space as possible for dynamic arrays. 
     - Learn to understand how the Solidity compiler handles your code and build up a library of optimal libraries and algorithms for common tasks. Use Mix or your test framework to compare bytecode sizes for contract generation.
@@ -317,6 +359,8 @@ name: a-blockchain-is-not-always-the-answer
  
 CPU-intensive operations like sorting large arrays should be placed off-chain and run by a trusted party. Note also that the results of such computations are easily auditable by running parallel off-chain proofing servers to verify the primary server's on-chain output/input, and can be easily managed via `Owned` contract base classes and `ownerOnly` function modifiers (to be examined later).
 
+.center[<img height="360" src="res/randart/everybodygetsablockchain.jpg" />]
+
 
 
 
@@ -330,11 +374,14 @@ name: types
 ]
 .right-column[
 
-Solidity has the usual memory-centric datatypes we're used to seeing in low-level languages, with some modern conveniences baked in to the compiler.
+.fr[
+<img height="500" src="https://imgs.xkcd.com/comics/types.png" />
 ]
 
-???
-:TODO: this is actually probably a good place to go into detail about how RAM & disk are merged
+Solidity has the usual memory-centric datatypes we're used to seeing in low-level languages, with some modern conveniences baked in to the compiler.
+
+In other words, it doesn't make the same tradeoffs JavaScript does in terms of providing a dynamic high-level abstraction over the raw data the CPU is crunching. I don't even know why it was billed as a *'JavaScript-like language'*. It's an Algol-derived language like basically every other language that has lots of `{`'s and `(`'s in it. If anything it's *'C-like'*!
+]
 
 
 
@@ -355,7 +402,7 @@ name: value-types
     - uses 1 byte for storage
 - fixed byte arrays: `byte`/`bytes1`..`bytes32`
     - actually these are just different ways of talking about integers (256 bits === 32 bytes; `bytes32` is really just `uint256` by a different name).
-    - assignment must be done with bitwise operators currently; eg. `byteArr |= newVal << (newIdx << 3)` to set the `newIdx`th value to `newVal`. 
+    - assignment must be done with bitwise operators currently
     - has a `length` attribute
 - No floats, but fixed-point math is built in to the syntax
     - see `ufixed8x248`, `ufixed128x128` and similar types- 
@@ -365,9 +412,6 @@ name: value-types
 - time units and ether units can all be entered literally for convenience and are interpreted as the base type (`wei` and `second`). `2 ether == 2000 finney`, `1 minutes == 60 seconds` etc. Note that all arithmetic uses ideal time and does not account for timezones, leap seconds or otherwise. See http://ether.fund/tool/converter for converting ether units.  
   .suggestion[Always specify these units when performing time calculations or value transactions for clarity.]
 ]
-
-???
-:TODO: check your bit-math, guy :p
 
 
 
@@ -439,7 +483,9 @@ name: data-location
 
 For reference types, we have to think about whether the data they reference is only kept in `memory` while the EVM is running this execution cycle, or if they should persist to `storage`.
 
-> The default for function parameters (including return parameters) is memory, the default for local variables is storage and the location is forced to storage for state variables (obviously).
+> The default for function parameters (including return parameters) is `memory`, the default for local variables is `storage` and the location is forced to `storage` for state variables (obviously).
+>
+> <cite>http://solidity.readthedocs.io/en/latest/types.html#data-location</cite>
 
 If you continue to think of contracts the same as classes, then these semantics should follow:
 
@@ -470,21 +516,67 @@ name: handling-data-location
 
 ### Handling Data location
 
-- Simply declare variables as `storage` or `memory` depending on whether you want them to be persisted to the blockchain. No I/O necessary- just assign data and you're done!
+- Simply declare variables as `storage` or `memory` depending on whether you want them to be persisted to the blockchain. **No I/O necessary**- just assign data and you're done!
 - Add the same keywords to function arguments in order to control the data's *context* when passed in.
-- .caveat[You must declare `storage` in your function signatures if you want to operate on storage data without it being copied into memory first]  (which is an expensive operation).
+- .caveat[You must declare `storage` in your function signatures if you want to operate on storage data without it being copied into memory first]  (which is an expensive operation &mdash; but note that it may still be less expensive than mutating a `storage` variable multiple times).
 
 #### Cleaning up
 
-Deleting state variables can be done with the `delete` operator. .caveat[Contract storage is statically assigned at the time of contract creation]&mdash; there is really no such thing as "delete". What the operator really does is set the value to the initial value for the type, ie. `x = 0` for integers. Because of this, some weird caveats apply when attempting to delete references to already deleted storage variables&mdash; .suggestion[always address the full path to data you wish to delete.]
+Deleting state variables can be done with the `delete` operator. .caveat[Contract storage is statically assigned at the time of contract creation]&mdash; there is really no such thing as "delete". What the operator really does is set the value to the initial value for the type, ie. `x = 0` for integers. Because of this, some weird caveats apply when attempting to delete references to already deleted storage variables.
 
-#### Reference behaviour
+.suggestion[always address the full path to data you wish to delete.]
+]
+
+
+
+
+
+
+---
+.left-column[
+<h1>Types</h1>
+<h2>Value types</h2>
+<h3>Constants</h3>
+<h2>Reference types</h2>
+]
+.right-column[
+<h3>Reference behaviour</h3>
 
 You can declare local variables within functions which reference storage variables. Modifying data via references will modify the persistent storage data the reference is bound to. Conceptually this is the same as a JavaScript or C reference- a new pointer was created to store a reference to another piece of (`storage`) memory that was already present. **Variables are just dumb pointers and don't care whether the address they reference is in `memory` or `storage`.**
+
+Note the important distinction or possible .caveat[`storage` is pass-by-value and `memory` is pass-by-reference.] Of course there is a reason for this- on the one hand you are manipulating data in a database directly and on the other you are manipulating variables as they flow through memory... even if the interface presented is seamless.
+
+For more information, see http://solidity.readthedocs.io/en/latest/types.html#data-location
+]
+
+
+
+
+
+
+---
+name: no-i-o-necessary
+.left-column[
+<h1>Types</h1>
+<h2>Value types</h2>
+<h3>Constants</h3>
+<h2>Reference types</h2>
+]
+.right-column[
+### No I/O necessary
+
+Let's take a moment here to think about what's involved in a modern web application. Between you clicking a button on some website and the relevant piece of data changing on the other end there are *countless* layers of checks and balances in place before that information gets to the database. Along with those comes a certain amount of 'padding'.
+
+On the blockchain, there is no such padding. You could probably say Solidity is more of a *database* language than it is a systems one&mdash; and if you know any database admins then you know they are very protective of their data! They have good reason to be&mdash; a modern organisation's data is its livelihood and when it is lost the business usually follows.
+
 ]
 
 ???
-:TODO: add another slide with an example of what 'handling data location' looks like in say node vs eth
+
+:TODO: example code and/or <!--picIO-->
+
+
+
 
 
 
@@ -882,7 +974,7 @@ modifier onlyOwner {
     _   // the underscore will be replaced with the invoked function by the compiler
 }
     
-function destroy() onlyOwner { 
+function destroy() external onlyOwner { 
     suicide(msg.sender);
 }
 ```
@@ -890,8 +982,50 @@ function destroy() onlyOwner {
 Modifiers can accept arguments, which are referenced from contract state variables. They are inheritable and overridable like normal methods. Multiple modifiers are evaluated left to right. The built-in visibility modifiers don't have to come before your custom ones, but they should- it's in the official style guide.
 ]
 
-???
-:TODO: more examples, examples of collapsing conditions
+
+
+
+
+
+---
+In this example we've decoupled the check (`onlyBy`) from the context of "`owner`" without creating any extra logic paths, and can now re-use it for different access checks:
+<br clear="all" />
+
+.col2-left[
+```
+contract accessModifiers {
+    modifier onlyBy(address _account) {
+        if (msg.sender != _account)
+            throw;
+        _
+    }
+}
+```
+]
+.col2-right[
+```
+contract Owned is accessModifiers {
+    address owner;
+
+    modifier onlyOwner() onlyBy(owner) { _ }
+
+    function Owned() {
+        owner = msg.sender;
+    }
+
+    function destroy() onlyOwner {
+        suicide(msg.sender);
+    }
+}
+```
+]
+
+<br clear="all" />
+This is very similar to how decorators function in Python and JavaScript ES7 or how annotations function in Java. **It allows us to functionally compose conditions without introducing bugs.**
+
+.suggestion[Write base modifiers as pure functions which do not depend on any external state, and use functional composition to create specifics.] This helps to keep modifiers generic and reusable.
+
+Further reading: [https://medium.com/@gavofyork/condition-orientated-programming-969f6ba0161a](https://medium.com/@gavofyork/condition-orientated-programming-969f6ba0161a)
 
 
 
@@ -929,52 +1063,6 @@ name: contract-structure
   ```
 ]
 
-???
-:TODO: generally more examples & testing of examples needed...
-
-```
-contract InterfaceExample {
-    function interfaceMethod() returns(uint);
-}
-
-contract AnotherInterface is InterfaceExample {
-    function interfaceMethod2() returns(uint);
-}
-
-contract NamedContract {
-    string name;
-
-    function NamedContract(string myName) {
-        name = myName;
-    }
-}
-
-contract ExampleContract is InterfaceExample {
-    address owner;
-
-    function ExampleContract() {
-        owner = msg.sender;
-    }
-
-    function interfaceMethod() returns(uint) {
-        return 8;
-    }
-}
-
-contract OverridingContract is ExampleContract, AnotherInterface {
-    function OverridingContract(string name) NamedContract('Overriding-' + name) {
-        // ...
-    }
-
-    function interfaceMethod() returns(uint) {
-        return 3;
-    }
-
-    function interfaceMethod2() returns(uint) {
-        return interfaceMethod();
-    }
-}
-```
 
 
 
@@ -1085,10 +1173,8 @@ As mentioned, the EVM has many languages which compile down to its CPU bytecode.
 .caveat[Method access operates very differently depending on the calling context.]
 
 - Internal function calls are extremely cheap and implemented as `JUMP` inside the EVM, so no memory is cleared. They also don't contribute to stack depth.
-- External function calls (`send`, `call`, calling via `this` and calling library methods) happen across the boundaries between contracts.
-- .caveat[There is an artificial limit of 1024 on stack depth for external function calls.]
-- External function calls happen at the ABI level and so can only handle fundamental data types. Any complex data you wish to pass between functions must include encoding / decoding logic.
-- .caveat[Data passed through all external method calls is copied by value.]
+- External function calls (`send`, `call`, calling via `this` and calling library methods) happen across the boundaries between contracts. .caveat[There is an artificial limit of 1024 on stack depth for external function calls.]
+- Since external function calls happen at the ABI level, they can only handle fundamental data types. Any complex data you wish to pass between functions must include encoding / decoding logic. .caveat[Data passed through all external method calls is copied by value.]
 
 ]
 
@@ -1112,7 +1198,7 @@ name: reference-types-and-contract-interfaces
 ]
 .right-column[
 
-Solidity's more complex datatypes can't be passed through external contract function calls. This is the difference between the  and the *Solidity Language Interface*- the former is at an EVM level and can only understand basic memory types, the latter is at a language level and can understand the more complex structures and conveniences Solidity provides over the raw assembly instructions and type interpretations.
+Solidity's more complex datatypes can't be passed through external contract function calls. This is the difference between the *Application Binary Interface* and *Solidity*'s language interface- the former is at a CPU level and can only understand basic memory types, the latter is at a language level and can understand the more complex structures and conveniences Solidity provides over the raw assembly instructions and type interpretations.
 
 - Internal contract methods and methods of superclasses: All Solidity datatypes allowed, accessed directly
 - Other contract methods: Only ABI datatypes allowed, accessed via `call` and `delegatecall`
@@ -1804,6 +1890,14 @@ name: guidelines-to-avoid-this-pitfall
 - ALWAYS specify a gas amount when calling other contracts (which prevents them being attackable by sending any amount of gas)
 
 
+Other observations for this bit:
+
+- NO STATE GUARANTEES outside of your contract
+- NO STATE GUARANTEES once you interact with ANY other contract
+    - :TODO: check if ref vars update in response to other contracts mutating them
+    - this is kinda like random thread access in a poorly threaded language
+    - if the contract hash matches some source, then OK
+
 
 
 
@@ -1815,45 +1909,6 @@ name: guidelines-to-avoid-this-pitfall
 - Write unit tests for everything.
 - Minimise dependencies between contracts and functions as much as possible.
 - Use function modifiers to abstract conditions into annotations as much as possible.
-    - Write base modifiers as pure functions which do not depend on any external state, and use functional composition to create specifics. This helps to keep modifiers generic...
-
-
-
-
-
-
----
-In this example, we've decoupled the check (`onlyBy`) from the parameter (`owner`), without creating any extra logic paths:
-
-```
-contract OwnershipModifiers {
-    modifier onlyBy(address _account) {
-        if (msg.sender != _account)
-            throw;
-        _
-    }
-}
-
-contract Owned is OwnershipModifiers {
-    address owner;
-
-    modifier onlyOwner() onlyBy(owner) {
-        _
-    }
-
-    function Owned() {
-        owner = msg.sender;
-    }
-
-    function destroy() onlyOwner {
-        suicide(msg.sender);
-    }
-}
-```
-
-This is very similar to how decorators function in Python and JavaScript ES7 or how annotations function in Java. **It allows us to functionally compose conditions without introducing bugs.**
-
-Further reading: [https://medium.com/@gavofyork/condition-orientated-programming-969f6ba0161a](https://medium.com/@gavofyork/condition-orientated-programming-969f6ba0161a)
 
 
 
@@ -1915,6 +1970,8 @@ example @ http://vessenes.com/more-ethereum-attacks-race-to-empty-is-the-real-de
 
 :TODO:
 https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s   (discussion on proof-based languages for smart contracts)
+
+http://themerkle.com/dao-attack-nullified-using-synereos-smart-contracting-language/ (Rholang)
 
 Solidity 2.0 roadmap
 
@@ -2056,6 +2113,9 @@ name: final-observations
     - Better languages may be needed: OCaml or Haskell-like, code as provable theorems
 - All external function calls are untrusted and could come in from anywhere.
 - There are **absolutely no guarantees** as to another contract's state or behaviour unless cryptographically provable to be authored from a given source code.
+
+???
+:TODO: mention Coq as theorem prover
 
 
 
