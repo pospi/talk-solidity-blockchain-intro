@@ -384,6 +384,14 @@ CPU-intensive operations like sorting large arrays should be placed off-chain an
 
 .center[<img height="360" src="res/randart/everybodygetsablockchain.jpg" />]
 
+???
+Truebit is worth mentioning here as an off-chain computation market:  
+https://blog.ethereum.org/2016/02/17/smart-contracts-courts-not-smart-judges/  
+https://medium.com/@simondlr/an-intro-to-truebit-a-scalable-decentralized-computational-court-1475531400c3
+
+
+
+
 
 
 
