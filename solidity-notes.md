@@ -146,10 +146,35 @@ template: start
 count: false
 <h1>Conventions used in these slides</h1>
 
-From time to time, I've used some labels to try to highlight things that are important to note:
+I've used colour coding throughout these slides to differentiate particular roles and concepts. Conventions are somewhat related to the syntax highlighting used whenever you'll see Solidity code, which uses the [Solarized](http://ethanschoonover.com/solarized) theme.
+
+- <span style="font-weight: bold; color: #b58900;">Orange</span> indicates objects within systems- *'classes'*, *'contracts'* and so on.
+- <span style="font-weight: bold; color: #268bd2;">Blue</span> indicates behaviours and processes- *'functions'* and other logic or processing.
+- <span style="font-weight: bold; color: #2aa198;">Green</span> indicates particular bits of data flowing through a system.
+- <span style="font-weight: bold; color: #859900;">Yellow</span> indicates data that is persistently stored somewhere.
+- <span style="font-weight: bold; color: #dc322f;">Red</span> is used for 'scary stuff' like indicating the behaviour of untrusted parties.
+- <span style="font-weight: bold; color: #657b83;">Grey</span> indicates the flow of information, and
+- <span style="font-weight: bold; color: #93a1a1;">Light grey</span> is for annotations.
+
+You can find the syntax highlighting package for [highlightjs.org](https://highlightjs.org/) at [github.com/pospi/highlightjs-solidity](https://github.com/pospi/highlightjs-solidity/) or `npm install highlightjs-solidity`.
+
+
+
+
+
+
+
+
+
+
+---
+count: false
+<h1>Conventions used in these slides</h1>
+
+From time to time, I've also used some labels to try to highlight things that are important to note:
 
 - .caveat[Caveats] - gotchas in the language that you should be sure to remember.
-- .suggestion[Suggestions] - my own opinionated suggestions, based on my current research and 12 years as a software engineer.  
+- .suggestion[Suggestions] - my own opinionated suggestions, based on my current research and 12 years as a software engineer / developer / architect.
   <sub>(whatever you think that's worth :p)</sub>
 
 I found good tutorial material for Solidity was rather scarce, so I may as well keep these notes up to date somewhere (at least for Solidity 1.0). 
@@ -157,9 +182,6 @@ I found good tutorial material for Solidity was rather scarce, so I may as well 
 - .update[Updates] - anything new added after presenting this for the reals. Feel free to submit pull requests at  
   https://github.com/pospi/talk-solidity-blockchain-intro.
 - .correction[Corrections] - if and when I find anything in this presentation to be incorrect I'll be updating it with the latest information. This is just me planning a special just-in-case label :p
-
-???
-:TODO: color convention
 
 
 
