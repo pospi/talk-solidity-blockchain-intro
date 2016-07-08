@@ -123,7 +123,6 @@ template: start
     - [Contract design patterns](#contract-design-patterns)
 - [Misc gotchas](#misc-gotchas)
 - [TheDAO hack: what went wrong?](#thedao-hack-what-went-wrong)
-    - [Short version](#short-version)
     - [Guidelines to avoid this pitfall](#guidelines-to-avoid-this-pitfall)
 - [Other 'vulnerabilities'](#other-vulnerabilities)
 - [Towards a better language?](#towards-a-better-language)
@@ -195,6 +194,13 @@ name: same-concepts-different-environment
 
 Solidity should be thought of as a *systems programming language*. Though syntactically similar to JavaScript, it is much more like C++ in terms of its structure and ways of handling data & memory.
 
+.col2-left[
+
+<img width="630" style="margin-left: -20px;" src="res/eth-overview1.png" />
+
+]
+.col2-right[
+
 **Ethereum is a low-level system**. Think of it like programming for an Arduino board, Onion Omega or Raspberry Pi. Resources are extremely scarce.
 
 - Ethereum blockchain ~= RAM ~= Hard Drive
@@ -208,9 +214,7 @@ Solidity should be thought of as a *systems programming language*. Though syntac
 
 Note that RAM & hard disk are combined since Ethereum's execution *as a program* and its blockchain storage *as state* are fused into the same thing. As we'll soon see, "reading a file" is no longer a task we need be concerned with.
 
-???
-
-:TODO: Needs chain / EVM / Solidity picture <!--pic01-->
+]
 
 
 
@@ -221,6 +225,8 @@ Note that RAM & hard disk are combined since Ethereum's execution *as a program*
 name: solidity-is-not-the-end-all
 # Solidity is not the end-all
 
+.col3-left[
+
 Serpent and LLL can also be written, and likely more efficiently (LLL in particular). Try them all out in-browser!
 
 - https://ethereum.github.io/browser-solidity/ - Solidity scripting
@@ -230,10 +236,13 @@ All compile to EVM bytecode. Solidity was not the first EVM-compiled language, a
 
 ...and it may not be the best tool for the job&mdash; see *"The Great DAO Hack"*! We'll come back to this later...
 
+]
+.col3-right2[
 
-???
+<img width="720" src="res/eth-overview2.png" />
 
-:TODO: picture with other languages in it <!--pic02-->
+]
+
 
 
 
@@ -486,13 +495,17 @@ name: reference-types
 ]
 .right-column[
 
+.col3-left[
+
 All reference types are accessed via variables on your deployed contract. There is no OO-like `static` in the sense of shared memory space on the class that is accessible by all instances of an object. To achieve such an outcome, one would need to deploy a separate shared storage contract to the blockchain and reference its address onto each of your own compiled contracts.
 
 Solidity's reference types take on an additional attribute in their *"context"*- defined as either `storage` or `memory`. This language keyword is all that is needed to differentiate between persistent data stored on-chain and transient data used during intermediate computations.
-]
 
-???
-:TODO: <!--picRT--> needs storage/ref types pic
+]
+.col3-right2[
+<img src="res/storage-ref-types.png" width="600" />
+]
+]
 
 
 
@@ -594,12 +607,18 @@ name: no-io-necessary
 <h2>Reference types</h2>
 ]
 .right-column[
+.col2-left[
+
 ### No I/O necessary
 
-Let's take a moment here to think about what's involved in a modern web application. Between you clicking a button on some website and the relevant piece of data changing on the other end there are *countless* layers of checks and balances in place before that information gets to the database. Along with those comes a certain amount of 'padding'.
+Let's take a moment here to think about what's involved in a modern web application. Between you clicking a button on some website and the relevant piece of data changing on the other end there are *countless* layers of checks and balances in place before that information gets to the database. Along with those comes a certain amount of 'padding' in terms of tolerance to bugs.
 
 On the blockchain, there is no such padding. You could probably say Solidity is more of a *database* language than it is a systems one&mdash; and if you know any database admins then you know they are very protective of their data! They have good reason to be&mdash; a modern organisation's data is its livelihood and when it is lost the business usually follows.
 
+]
+.col2-right[
+<img src="res/io-layers.png" width="400" />
+]
 ]
 
 ???
@@ -1199,7 +1218,29 @@ name: internal-and-external-interfaces
 ]
 .right-column[
 
-As mentioned, the EVM has many languages which compile down to its CPU bytecode. As such, there is a lower-level API available between contracts with a more restricted set of datatypes (known as the *Contract ABI* or *"Application Binary Interface"*) which must be used when calling between them (Serpent doesn't know about the types of data structures Solidity supports, for example). This also applies even when calling a contract's own methods via the `this` pointer.
+As mentioned, the EVM has many languages which compile down to its CPU bytecode. As such, there is a lower-level API available between contracts with a more restricted set of datatypes (known as the *Contract ABI* or *"Application Binary Interface"*) which must be used when calling between them (Serpent doesn't know about the types of data structures Solidity supports, for example).  
+.caveat[This also applies when calling a contract's own methods via the `this` pointer.]
+
+.center[
+<img src="res/contract-interfaces.png" height="450" />
+]
+
+]
+
+
+
+
+
+
+
+
+---
+.left-column[
+<h1>Contracts calling contracts</h1>
+<h2>Method visibility</h2>
+<h2>Internal and external interfaces</h2>
+]
+.right-column[
 
 .caveat[Method access operates very differently depending on the calling context.]
 
@@ -1208,11 +1249,6 @@ As mentioned, the EVM has many languages which compile down to its CPU bytecode.
 - Since external function calls happen at the ABI level, they can only handle fundamental data types. Any complex data you wish to pass between functions must include encoding / decoding logic. .caveat[Data passed through all external method calls is copied by value.]
 
 ]
-
-???
-:TODO: picture needed <!--picABI-->
-
-:TODO: work out what the caveats are
 
 
 
@@ -2006,34 +2042,74 @@ function payOut(address _recipient, uint _amount) returns (bool) {
 
 ]
 
+???
+Spotting the bug is not supposed to be easy :p
+
+
+
+
 
 
 
 
 
 ---
-name: short-version
-## Short version
+.center[
+<img src="res/dao-hack1.png" height="450" style="margin-top: -1em;" />
+]
 
-- The attacker calls `splitDAO`, which calls `withdrawRewardFor` and then `payOut`. They provide extra gas in order to run more function calls than TheDAO intended. `payOut` reads the splitter's balance and attempts to refund their ether to exit them from the DAO.
+- The attacker calls `splitDAO`, which calls `withdrawRewardFor` and then `payOut`. They provide extra gas in order to recursively run more function calls than TheDAO intended. `payOut` reads the splitter's balance and attempts to refund their ether to exit them from the DAO.
 
+???
+Some background on the splitting process might be necessary.
+
+
+---
+.center[
+<img src="res/dao-hack2.png" height="450" style="margin-top: -1em;" />
+]
 
 - But, `splitDAO` is public...
 - So the attacker can use a fallback function in their own contract (fired when `payOut` runs `_recipient.call.value(_amount)()`) to call `splitDAO` *while the original `splitDAO` call is still running*...
 
 
+---
+.center[
+<img src="res/dao-hack3.png" height="450" style="margin-top: -1em;" />
+]
+
 - `splitDAO`(2) calls `withdrawRewardFor` calls `payOut`...
 - The original call (1) to `splitDAO` has still not run `balances[msg.sender] = 0;`... so `payOut` transfers the same balance back to the attacking contract as before...
 
 
-- This continues until the originally provided gas runs out. It does not continue until the artificial EVM stack depth limit is reached (1024), as this would cause everything to roll back.
+---
+.center[
+<img src="res/dao-hack4.png" height="450" style="margin-top: -1em;" />
+]
+
+- This continues a few times until the attacker has spent all the gas they originally provided to the transaction. They are careful to stop before the artificial EVM stack depth limit is reached (1024), as this would cause everything to roll back.
 
 
-- Each `payOut` function will eventually finalize, and `splitDAO` will call the `Transfer` event each time... pity it should have called the `transfer` function instead...
+---
+.center[
+<img src="res/dao-hack5.png" height="450" style="margin-top: -1em;" />
+]
+
+- Each `payOut` function will eventually finalize and return, and `splitDAO` will call the `Transfer` event each time in order to transfer its internal tokens over to the new split DAO... pity it should have called the `transfer` **function** instead...
 
 
-- Without `transfer` being called to correctly finalise the split, the attacker is free to move their DAO tokens into a secondary contract at the time their inner call to `splitDAO` returns, leaving the DAO thinking the recipient's tokens have been correctly cleared.
+---
+.center[
+<img src="res/dao-hack6.png" height="450" style="margin-top: -1em;" />
+]
 
+- Without `transfer` being called to correctly finalise the split, the attacker is free to move their DAO tokens into a secondary contract at the time their inner call to `splitDAO` returns, leaving the DAO thinking the recipient's tokens have been correctly moved across.
+
+
+---
+.center[
+<img src="res/dao-hack7.png" height="450" style="margin-top: -1em;" />
+]
 
 - They can then move these tokens back into the original account and start the process all over again.
 
@@ -2041,6 +2117,12 @@ name: short-version
 
 
 ---
+<h1>...so what went wrong?</h1>
+
+In a sentence: managing state mutations in a permissionless, non-transactional system is super hard.
+
+Functional programming tenet: **state is evil.**
+
 <h3>Further reading</h3>
 
 - https://pdaian.com/blog/chasing-the-dao-attackers-wake/
@@ -2063,12 +2145,12 @@ name: guidelines-to-avoid-this-pitfall
 - If these interactions fail, handle the effect in a way which **does not interfere** with **any other address** being processed.
 - Presume any methods in your contract other than `internal` and `private` ones will be called by contracts other than those you expect.
 - **Always** specify a gas amount when calling other contracts (which prevents them being attackable by sending any amount of gas).
-- Also never presume that an address implies a user. An address does not guarantee a real person.
 - Use `send` instead of `call` wherever possible. Even then, ensure you **handle failures correctly**, and again, update your contract's own state **first**.
   > send is safer to use since by default it doesn't forward any gas, so the receiver's fallback function can only emit events.
   >
   > <cite>http://ethereum.stackexchange.com/a/6474/2665</cite>
 - Presume any call to an externally accessible contract method you define may run out of gas and fail.
+- Never presume that an address implies a user. An address does not guarantee a real person.
 
 Always remember, there are:
 
@@ -2079,8 +2161,6 @@ Imagine it as if another thread might come in and modify your memory at any time
 
 ???
 "Specify a gas amount"- because an external contract might send heaps of gas into a method in order to be able to recursively call back into your own contract many times over. Limiting gas reduces this risk.
-
-:TODO: some discussion of DAO framework v1 and test cases
 
 :TODO: check if ref vars update in response to other contracts mutating them
 
@@ -2102,16 +2182,21 @@ Imagine it as if another thread might come in and modify your memory at any time
 <img src="res/randart/functional-squirrel.jpg" />
 ]
 
+???
+Some discussion of DAO framework v1 and test cases
+
 
 
 
 ---
 name: other-vulnerabilities
+
+.col2-left[
 # Other 'vulnerabilities'
 
 Headlines like "[Solarstorm: A security exploit with Ethereum’s Solidity language, not just the DAO](https://blog.blockstack.org/solar-storm-a-serious-security-exploit-with-ethereum-not-just-the-dao-a03d797d98fa)" are very catchy but don't amount to much when one stops to think about how computers operate. This is just how you'd want programs to run, sometimes. Sometimes a function calls a function in another class that calls back to the object that started it all. It's not even uncommon. So to disallow *that* would be to disallow, you know, writing code. 
 
-If you're gonna be writing code, you're gonna get some rat faeces in there. *Everything is Terrible*&trade;
+If you're gonna be writing code, you're gonna get some rat faeces in there. In software, *Everything is Terrible*&trade;
 
 So let's all calm down for a minute, and think about all these things together.
 
@@ -2119,13 +2204,18 @@ So let's all calm down for a minute, and think about all these things together.
 2. A vulnerability in a language does not mean the underlying CPU is broken.
 3. A language which allows sloppy code need not be doomed if good tooling can be built around it... but a language which definitively prevents sloppy code is always going to be better.
 
-???
-:TODO: diagrams of the two vulnerabilities discussed <!--pic-SL-->
+]
+.col2-right[
+.center[<img src="res/vulnerabilities.png" width="400" />]
+]
 
-:TODO: checkCaller method decorator thing to ensure caller is an instance of something else?
+???
+Bullet points are all that really needs mentioning here.
 
 But the point still stands- should the network correct & account for these things at a protocol level, or are there cases where the functionality these bugs expose is in fact critical for the funcctioning of the whole platform?
 And if that's the case- then you have a rather awkward catch-22 situation at a core system level.
+
+:TODO: checkCaller method decorator thing to ensure caller is an instance of something else?
 
 
 
@@ -2284,7 +2374,7 @@ name: final-observations
 # Final observations
 
 - The risks are high with any on-chain language- no software stack to act as padding for bugs.
-- Solidity is a means of direct manipulation of the blockchain database state.
+- Blockchain languages are tools for directly manipulating the blockchain database state.
     - **State is evil!** Uh-oh...
     - Recursive calling vulnerabilities happen due to errors in *ordering state manipulations*
     - There are **no state guarantees** when interacting with external contracts
