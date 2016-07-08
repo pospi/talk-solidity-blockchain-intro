@@ -586,7 +586,7 @@ For more information, see http://solidity.readthedocs.io/en/latest/types.html#da
 
 
 ---
-name: no-i-o-necessary
+name: no-io-necessary
 .left-column[
 <h1>Types</h1>
 <h2>Value types</h2>
@@ -1967,6 +1967,10 @@ function splitDAO(
     paidOut[msg.sender] = 0;
     return true;
 }
+
+function transfer(address _to, uint256 _value) returns (bool success) { /* ... */ }
+
+event Transfer(address indexed _from, address indexed _to, uint256 _amount);
 ```
 
 ]
@@ -2011,25 +2015,39 @@ function payOut(address _recipient, uint _amount) returns (bool) {
 name: short-version
 ## Short version
 
-- `splitDAO`(1) calls `withdrawRewardFor` calls `payOut`.
-- `payOut` returns false if transferring the balance to the recipient of the split fails. I am reasonably sure this is good architecture- it allows `payOut` to be safely used on arrays of addresses to refund in bulk.
-- However, `withdrawRewardFor` throws if `rewardAccount.payOut` fails! This can cause any operation `withdrawRewardFor` is involved in to fail.
+- The attacker calls `splitDAO`, which calls `withdrawRewardFor` and then `payOut`. They provide extra gas in order to run more function calls than TheDAO intended. `payOut` reads the splitter's balance and attempts to refund their ether to exit them from the DAO.
+
+
 - But, `splitDAO` is public...
 - So the attacker can use a fallback function in their own contract (fired when `payOut` runs `_recipient.call.value(_amount)()`) to call `splitDAO` *while the original `splitDAO` call is still running*...
-    - `splitDAO`(2) calls `withdrawRewardFor` calls `payOut`...
-    - The original call (1) to `splitDAO` has still not run `balances[msg.sender] = 0;`... so `payOut` transfers the same balance back to the attacking contract as before...
-    - This continues until the artificial EVM stack depth limit is reached (1024).
-- The original `payOut` function will eventually get back a 'stack depth limit exceeded' exception from the original `_recipient.call.value(_amount)()` and return `false`.
-- The original `withdrawRewardFor` function *throws* - and the balances are never reset! It's as if the attacker never withdrew from The DAO in the first place.
 
-???
-:TODO: yeah need more here, split this into stages with diagrams
 
-https://pdaian.com/blog/chasing-the-dao-attackers-wake/  
-http://vessenes.com/more-ethereum-attacks-race-to-empty-is-the-real-deal/  
-http://hackingdistributed.com/2016/06/16/scanning-live-ethereum-contracts-for-bugs/  
-http://vessenes.com/ethereum-griefing-wallets-send-w-throw-considered-harmful/  
-http://vessenes.com/deconstructing-thedao-attack-a-brief-code-tour/
+- `splitDAO`(2) calls `withdrawRewardFor` calls `payOut`...
+- The original call (1) to `splitDAO` has still not run `balances[msg.sender] = 0;`... so `payOut` transfers the same balance back to the attacking contract as before...
+
+
+- This continues until the originally provided gas runs out. It does not continue until the artificial EVM stack depth limit is reached (1024), as this would cause everything to roll back.
+
+
+- Each `payOut` function will eventually finalize, and `splitDAO` will call the `Transfer` event each time... pity it should have called the `transfer` function instead...
+
+
+- Without `transfer` being called to correctly finalise the split, the attacker is free to move their DAO tokens into a secondary contract at the time their inner call to `splitDAO` returns, leaving the DAO thinking the recipient's tokens have been correctly cleared.
+
+
+- They can then move these tokens back into the original account and start the process all over again.
+
+
+
+
+---
+<h3>Further reading</h3>
+
+- https://pdaian.com/blog/chasing-the-dao-attackers-wake/
+- http://vessenes.com/more-ethereum-attacks-race-to-empty-is-the-real-deal/
+- http://hackingdistributed.com/2016/06/16/scanning-live-ethereum-contracts-for-bugs/
+- http://vessenes.com/ethereum-griefing-wallets-send-w-throw-considered-harmful/
+- http://vessenes.com/deconstructing-thedao-attack-a-brief-code-tour/
 
 
 
@@ -2066,6 +2084,7 @@ Imagine it as if another thread might come in and modify your memory at any time
 
 :TODO: check if ref vars update in response to other contracts mutating them
 
+:TODO: suggest better naming convention for events
 
 
 
