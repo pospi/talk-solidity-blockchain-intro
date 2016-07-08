@@ -1,21 +1,10 @@
 Slide deck:
- ☐ contribution link for pull reqs @ start
+ ☐ summarise all slides
  ☐ setup script for cloning libraries: get-example-libs.sh
  ☐ https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s
- ☐ Solidity 2.0 roadmap
+ ☐ research Solidity 2.0 roadmap
  ☐ https://ethereum.stackexchange.com/questions/1134/what-design-patterns-are-appropriate-for-data-structure-modification-within-ethe?newreg=c176baafe7254727b892b6c257938950
  ☐ http://ethereum.stackexchange.com/questions/2159/guidelines-for-designing-contracts-to-handle-bugfixes/2162#2162
-images:
-  ☐ <!--pic01--> chain / EVM / solidity system diagram
-  ☐ <!--pic02--> same again, but with LLL & Serpent added for good measure
-    ☐ bring this back in relevant discussion about access levels
-  ☐ <!--picRT--> storage/ref types onchain/inEVM location pic
-    ☐ include where context coercion happens
-  ☐ <!--picIO--> software layers in a web app vs blockchain (large system complexity buffering)
-  ☐ <!--picABI--> ABI/Solidity contract interfaces diagram
-  ☐ DAO hack pics walkthrough
-  ☐ <!--pic-SL--> reentrancy vs. "solar storm"
-  ☐ work out convention colours for imagery. WHAT NEEDS DRAWING?!
 verify stuff:
   ☐ is contract storage & bytecode same block of memory or can storage vary?
   ☐ test "contrived contract source" example
