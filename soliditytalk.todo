@@ -1,13 +1,15 @@
+☐ thankspic
 Slide deck:
  ☐ setup script for cloning libraries: get-example-libs.sh
 verify stuff:
+  ☐ test if name collisions do in fact happen when inheriting classes with same methods
   ☐ is contract storage & bytecode same block of memory or can storage vary?0
     (Quantifying 'efficiency')
   ☐ test "contrived contract source" example
   ☐ test "contract switch"
   ☐ test "contracts as addresses" example
   ☐ can I recommend to always access state vars via `this`? no difference in cost?
-  ☐ test if name collisions do in fact happen when inheriting classes with same methods
+  ☐ test exception handling when invoking nonexistent methods
   ☐ "guidelines to avoid"- check if ref vars update in response to other contracts mutating them
   ☐ write test code to explain behaviour of function `storage` vars (persist after transaction?)
   ☐ Is storage referenced by inner vars modified by mutations stemming from calls to external contract functions?
