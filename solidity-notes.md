@@ -63,6 +63,11 @@ template: start
 
 <h3>A knowledge remix</h3>
 
+???
+Intro self; talk about how after a few years you realise it's all the same thing. This is no different, and if you think a little about what's going on there are reasons for all the weirdnesses.
+
+So hopefully you'll come out of this understanding a bit more about how blockchain computation is the same as regular computing, and what's new about it.
+
 ---
 # Agenda
 
@@ -102,6 +107,7 @@ template: start
     - [Interpreter caveats](#interpreter-caveats)
     - [Function modifiers](#function-modifiers)
     - [Contract structure](#contract-structure)
+    - [Natspec documentation](#natspec-documentation)
     - [Inline assembly](#inline-assembly)
 - [Contracts calling contracts](#contracts-calling-contracts)
     - [Method visibility](#method-visibility)
@@ -123,10 +129,10 @@ template: start
     - [Contract design patterns](#contract-design-patterns)
 - [Misc gotchas](#misc-gotchas)
 - [TheDAO hack: what went wrong?](#thedao-hack-what-went-wrong)
-    - [Short version](#short-version)
     - [Guidelines to avoid this pitfall](#guidelines-to-avoid-this-pitfall)
 - [Other 'vulnerabilities'](#other-vulnerabilities)
 - [Towards a better language?](#towards-a-better-language)
+- [Solidity 2.0 roadmap](#solidity-20-roadmap)
 - [In the meantime](#in-the-meantime)
     - [Unit testing frameworks](#unit-testing-frameworks)
     - [Contract base classes](#contract-base-classes)
@@ -135,6 +141,9 @@ template: start
 
 <!-- /MarkdownTOC -->
 ]
+
+???
+Lots to get through! Much stuff will be skipped but you can download & review the presentation any time.
 
 
 
@@ -146,10 +155,38 @@ template: start
 count: false
 <h1>Conventions used in these slides</h1>
 
-From time to time, I've used some labels to try to highlight things that are important to note:
+I've used colour coding throughout these slides to differentiate particular roles and concepts. Conventions are somewhat related to the syntax highlighting used whenever you'll see Solidity code, which uses the [Solarized](http://ethanschoonover.com/solarized) theme.
+
+- <span style="font-weight: bold; color: #b58900;">Orange</span> indicates objects within systems- *'classes'*, *'contracts'* and so on.
+- <span style="font-weight: bold; color: #268bd2;">Blue</span> indicates behaviours and processes- *'functions'* and other logic or processing.
+- <span style="font-weight: bold; color: #2aa198;">Green</span> indicates particular bits of data flowing through a system.
+- <span style="font-weight: bold; color: #859900;">Yellow</span> indicates data that is persistently stored somewhere.
+- <span style="font-weight: bold; color: #dc322f;">Red</span> is used for 'scary stuff' like indicating the behaviour of untrusted parties.
+- <span style="font-weight: bold; color: #657b83;">Grey</span> indicates the flow of information, and
+- <span style="font-weight: bold; color: #93a1a1;">Light grey</span> is for annotations.
+
+You can find the syntax highlighting package for [highlightjs.org](https://highlightjs.org/) at [github.com/pospi/highlightjs-solidity](https://github.com/pospi/highlightjs-solidity/) or `npm install highlightjs-solidity`.
+
+???
+The main ones you'll want to care about are the oranges, reds and blues; because these indicate contracts and their interactions.
+
+
+
+
+
+
+
+
+
+
+---
+count: false
+<h1>Conventions used in these slides</h1>
+
+From time to time, I've also used some labels to try to highlight things that are important to note:
 
 - .caveat[Caveats] - gotchas in the language that you should be sure to remember.
-- .suggestion[Suggestions] - my own opinionated suggestions, based on my current research and 12 years as a software engineer.  
+- .suggestion[Suggestions] - my own opinionated suggestions, based on my current research and 12 years as a software engineer / developer / architect.
   <sub>(whatever you think that's worth :p)</sub>
 
 I found good tutorial material for Solidity was rather scarce, so I may as well keep these notes up to date somewhere (at least for Solidity 1.0). 
@@ -157,9 +194,6 @@ I found good tutorial material for Solidity was rather scarce, so I may as well 
 - .update[Updates] - anything new added after presenting this for the reals. Feel free to submit pull requests at  
   https://github.com/pospi/talk-solidity-blockchain-intro.
 - .correction[Corrections] - if and when I find anything in this presentation to be incorrect I'll be updating it with the latest information. This is just me planning a special just-in-case label :p
-
-???
-:TODO: color convention
 
 
 
@@ -172,6 +206,13 @@ name: same-concepts-different-environment
 # Same concepts, different environment
 
 Solidity should be thought of as a *systems programming language*. Though syntactically similar to JavaScript, it is much more like C++ in terms of its structure and ways of handling data & memory.
+
+.col2-left[
+
+<img width="630" style="margin-left: -20px;" src="res/eth-overview1.png" />
+
+]
+.col2-right[
 
 **Ethereum is a low-level system**. Think of it like programming for an Arduino board, Onion Omega or Raspberry Pi. Resources are extremely scarce.
 
@@ -186,9 +227,7 @@ Solidity should be thought of as a *systems programming language*. Though syntac
 
 Note that RAM & hard disk are combined since Ethereum's execution *as a program* and its blockchain storage *as state* are fused into the same thing. As we'll soon see, "reading a file" is no longer a task we need be concerned with.
 
-???
-
-:TODO: Needs chain / EVM / Solidity picture <!--pic01-->
+]
 
 
 
@@ -199,6 +238,8 @@ Note that RAM & hard disk are combined since Ethereum's execution *as a program*
 name: solidity-is-not-the-end-all
 # Solidity is not the end-all
 
+.col3-left[
+
 Serpent and LLL can also be written, and likely more efficiently (LLL in particular). Try them all out in-browser!
 
 - https://ethereum.github.io/browser-solidity/ - Solidity scripting
@@ -208,10 +249,16 @@ All compile to EVM bytecode. Solidity was not the first EVM-compiled language, a
 
 ...and it may not be the best tool for the job&mdash; see *"The Great DAO Hack"*! We'll come back to this later...
 
+]
+.col3-right2[
+
+<img width="720" src="res/eth-overview2.png" />
+
+]
 
 ???
+Summary: bears mentioning that Solidity is not the only language you can write on top of Ethereum.
 
-:TODO: picture with other languages in it <!--pic02-->
 
 
 
@@ -259,7 +306,7 @@ var a = new Array(100);
 a.push(12);
 ```
 
-What is the in-memory length of the array `a` after the script runs?
+What is the length of the array `a` *in memory* after the script runs?
 
 ???
 
@@ -281,13 +328,20 @@ If you didn't answer `200`, and looking up the explanation as to *why* surprised
 name: best-places-to-get-started
 # Best places to get started
 
-- http://solidity.readthedocs.io/ (most complete reference material I could find)
+<br />
+
+#### Language intros & reference material
+
+- http://solidity.readthedocs.io/ (most up-to-date and current information)
 - https://ethereumbuilders.gitbooks.io/guide/ (an oldie but a goodie, also contains some Serpent documentation)
-- https://docs.erisindustries.com/tutorials/solidity/ 
 
-???
+#### Architecture and best-practises
 
-:TODO: QA eris docs, may be framework-specific
+- https://docs.erisindustries.com/tutorials/solidity/ (contains some framework-specific documentation in addition to a wealth of general knowledge)
+
+#### Going deeper
+
+- https://github.com/ethereum/wiki/wiki/
 
 
 
@@ -318,10 +372,9 @@ Like .superstress[really important]. Pre-increment vs. post-increment, *'for'* v
 <br /><br /><br /><br />*<sub><em>No, really... look it up. Start here: http://www.coindesk.com/microscope-economic-environmental-costs-bitcoin-mining/</em></sub>
 
 ???
-
 Worth stressing that environmental impact is something that not many people are discussing or even openly acknowledging, and that needs to change.
 
-Also that in no way do any future optimisations or improvements make this less true. When you get down to the basic physics of things, burning energy is burning energy; and we don't have enough of it for everyone right now.
+Also that in no way do any future optimisations or improvements make this less true. When you get down to the basic physics of things, burning energy is burning energy; and we don't have enough of it for everyone right now. We could just as easily ask how many tonnes of CO<sub>2</sub> have been burnt up by ancient code in OpenSSL.
 
 Eth 2.0 / proof of stake, Peercoin, Litecoin & even Ripple (despite its political shortcomings) are great examples of where things should be moving.
 
@@ -362,6 +415,14 @@ CPU-intensive operations like sorting large arrays should be placed off-chain an
 
 .center[<img height="360" src="res/randart/everybodygetsablockchain.jpg" />]
 
+???
+Truebit is worth mentioning here as an off-chain computation market:  
+https://blog.ethereum.org/2016/02/17/smart-contracts-courts-not-smart-judges/  
+https://medium.com/@simondlr/an-intro-to-truebit-a-scalable-decentralized-computational-court-1475531400c3
+
+
+
+
 
 
 
@@ -381,7 +442,11 @@ name: types
 
 Solidity has the usual memory-centric datatypes we're used to seeing in low-level languages, with some modern conveniences baked in to the compiler.
 
-In other words, it doesn't make the same tradeoffs JavaScript does in terms of providing a dynamic high-level abstraction over the raw data the CPU is crunching. I don't even know why it was billed as a *'JavaScript-like language'*. It's an Algol-derived language like basically every other language that has lots of `{`'s and `(`'s in it. If anything it's *'C-like'*!
+In other words, it doesn't make the same tradeoffs JavaScript does in terms of providing a dynamic high-level abstraction over the raw data the CPU is crunching. 
+
+...I don't even know why it was billed as a *'JavaScript-like language'*. It's an Algol-derived language like basically every other language that has lots of `{`'s and `(`'s in it. If anything it's *'C-like'*!
+
+.center[<img src="res/randart/semantics.jpg" height="290" />]
 ]
 
 
@@ -414,6 +479,11 @@ name: value-types
   .suggestion[Always specify these units when performing time calculations or value transactions for clarity.]
 ]
 
+???
+:TODO: need to check about byte array assignment.. pretty sure that info is old.
+
+EVM word size is 256 bits (I think)
+
 
 
 
@@ -440,6 +510,9 @@ contract C {
 
 ]
 
+???
+Summary: Constants compile down to literals and save unnecessary storage space being used up.
+
 
 
 
@@ -456,13 +529,17 @@ name: reference-types
 ]
 .right-column[
 
+.col3-left[
+
 All reference types are accessed via variables on your deployed contract. There is no OO-like `static` in the sense of shared memory space on the class that is accessible by all instances of an object. To achieve such an outcome, one would need to deploy a separate shared storage contract to the blockchain and reference its address onto each of your own compiled contracts.
 
 Solidity's reference types take on an additional attribute in their *"context"*- defined as either `storage` or `memory`. This language keyword is all that is needed to differentiate between persistent data stored on-chain and transient data used during intermediate computations.
-]
 
-???
-:TODO: <!--picRT--> needs storage/ref types pic
+]
+.col3-right2[
+<img src="res/storage-ref-types.png" width="600" />
+]
+]
 
 
 
@@ -479,14 +556,21 @@ name: data-location
 <h2>Reference types</h2>
 ]
 .right-column[
-
 ### Data location
 
+.col2-left[
 For reference types, we have to think about whether the data they reference is only kept in `memory` while the EVM is running this execution cycle, or if they should persist to `storage`.
 
 > The default for function parameters (including return parameters) is `memory`, the default for local variables is `storage` and the location is forced to `storage` for state variables (obviously).
 >
 > <cite>http://solidity.readthedocs.io/en/latest/types.html#data-location</cite>
+
+]
+.col2-right[
+<img src="res/storage-ref-types.png" width="400" />
+]
+
+<br /><br />
 
 If you continue to think of contracts the same as classes, then these semantics should follow:
 
@@ -528,6 +612,9 @@ Deleting state variables can be done with the `delete` operator. .caveat[Contrac
 .suggestion[always address the full path to data you wish to delete.]
 ]
 
+???
+Summary: in order to store data, all you need to do is use a language keyword!
+
 
 
 
@@ -550,13 +637,16 @@ Note the important distinction or possible .caveat[`storage` is pass-by-value an
 For more information, see http://solidity.readthedocs.io/en/latest/types.html#data-location
 ]
 
+???
+Summary: References are dumb and the CPU doesn't care where the data it's modifying lies.
+
 
 
 
 
 
 ---
-name: no-i-o-necessary
+name: no-io-necessary
 .left-column[
 <h1>Types</h1>
 <h2>Value types</h2>
@@ -564,17 +654,22 @@ name: no-i-o-necessary
 <h2>Reference types</h2>
 ]
 .right-column[
+.col2-left[
+
 ### No I/O necessary
 
-Let's take a moment here to think about what's involved in a modern web application. Between you clicking a button on some website and the relevant piece of data changing on the other end there are *countless* layers of checks and balances in place before that information gets to the database. Along with those comes a certain amount of 'padding'.
+Let's take a moment here to think about what's involved in a modern web application. Between you clicking a button on some website and the relevant piece of data changing on the other end there are *countless* layers of checks and balances in place before that information gets to the database. Along with those comes a certain amount of 'padding' in terms of tolerance to bugs.
 
 On the blockchain, there is no such padding. You could probably say Solidity is more of a *database* language than it is a systems one&mdash; and if you know any database admins then you know they are very protective of their data! They have good reason to be&mdash; a modern organisation's data is its livelihood and when it is lost the business usually follows.
 
 ]
+.col2-right[
+<img src="res/io-layers.png" width="400" />
+]
+]
 
 ???
-
-:TODO: example code and/or <!--picIO-->
+Summary: Everything is closer to the end result. Super convenient, but with great power comes great responsibility.
 
 
 
@@ -607,9 +702,6 @@ name: arrays
     - Size is optional, when ommitted the array length is dynamic- `int8[]`
     - `bytes` acts identically to `uint8[]` or `byte[]`, but is stored without padding and thus packed more tightly in function call data. Use it, it's cheaper!
 ]
-
-???
-:TODO: can bytes be longer than 32?
 
 
 
@@ -778,12 +870,9 @@ The `address` type identifies an account (human or contract). It:
 
 - is equivalent to `uint160` (a 20-byte value), but is also exposed as an object with an interface by the language bindings
 - accessible via `this` for the contract you're writing (remember, a deployed / running contract is just an object in memory). The current contract (and ONLY the current contract) can be destroyed by calling `selfdestruct(address recipient)` and passing the address to send any remaining funds stored in the contract to.
-- All addresses have a `balance` attribute for accessing the balance of that contract or user.
-- You just wrap a constructor around an address to typecast it to the thing you know it is before calling its methods, or you can use types in the function signature too.
-]
+- Has a `balance` attribute for accessing the balance of that contract or user.
 
-???
-:TODO: needs example of typecasting
+]
 
 
 
@@ -819,9 +908,6 @@ All these members of the `address` type are made available by the compiler for y
 - all return a boolean indicating whether the invoked function terminated (`true`) or caused an EVM exception (`false`)
 ]
 
-???
-:TODO: should ensure that addresses behave the same for contracts and humans
-
 
 
 
@@ -856,13 +942,13 @@ Another convenience is the `value` and `gas` methods of all external function re
 
 ```
 contract InfoFeed {
-    function info() returns (uint ret) { return 42; }
+    function info() returns(uint ret) { return 42; }
 }
 
 contract Consumer {
     InfoFeed feed;
     function setFeed(address addr) { feed = InfoFeed(addr); }
-    function callFeed() { feed.info.value(1 ether).gas(800 wei)(); }
+*   function callFeed() { feed.info.value(1 ether).gas(800 wei)(); }
 }
 ```
 
@@ -1062,6 +1148,57 @@ name: contract-structure
         }
     }
   ```
+
+.suggestion[Name abstract base contracts in lower camelcase and derived contracts intended for deployment using upper camelcase] &mdash; there's nothing built in to the language to disambiguate these.
+
+]
+
+???
+Summary: Defining contracts is basically like defining classes in any normal language.
+
+
+
+
+
+
+---
+name: natspec-documentation
+.left-column[
+<h1>Control flow & syntax</h1>
+<h2>Interpreter caveats</h2>
+<h2>Function modifiers</h2>
+<h2>Contract structure</h2>
+## Natspec documentation
+]
+.right-column[
+
+It's also worth noting that Ethereum uses Javadoc / JSDoc style comments with some extra extensions in order to make things clearer for the end-user. These blocks appear above contract & function definitions and are delimited by triple slashes. Here's an example from the Ethereum wiki, edited slightly for brevity:
+
+```
+/// @title  Billy's best cryptocurrency
+/// @author Billy Dengus
+contract BilCoin
+{
+  /// @notice Send `(valueInmBIL / 1000).fixed(0,3)` BIL from the account of 
+  /// `message.caller.address()`, to an account accessible only by `to.address()
+  /// @dev Transfers currency between users, mutating `balances`
+  /// @param to          The address of the recipient of the BilCoin
+  /// @param valueInmBil The BilCoin value to send
+  /// @return bool indicating whether the operation succeeded
+  function send(address to, uint256 valueInmBIL) {
+    if (balances[message.caller] >= valueInmBIL) {
+      balances[to] += valueInmBIL;
+      balances[message.caller] -= valueInmBIL;
+      return true;
+    }
+    return false;
+  }
+```
+
+The additional tags indicate messages visible to the end-user when interacting with your contract (`@notice`) or developer when building against it (`@dev`). The dynamic expressions between the <tt>`</tt>s will be evaluated by a JS environment when shown to the user.
+
+<span class="suggestion">Always add these, especially `@notice`.</span>
+
 ]
 
 
@@ -1076,31 +1213,34 @@ name: inline-assembly
 <h2>Interpreter caveats</h2>
 <h2>Function modifiers</h2>
 <h2>Contract structure</h2>
+<h2>Natspec documentation</h2>
 ## Inline assembly
 ]
 .right-column[
 
 You can write inline assembly, too! - http://solidity.readthedocs.io/en/latest/control-structures.html#inline-assembly
 
-    library VectorSum {
-        // This function is less efficient because the optimizer currently fails to
-        // remove the bounds checks in array access.
-        function sumSolidity(uint[] _data) returns (uint o_sum) {
-            for (uint i = 0; i < _data.length; ++i)
-                o_sum += _data[i];
-        }
+```
+library VectorSum {
+    // This function is less efficient because the optimizer currently fails to
+    // remove the bounds checks in array access.
+    function sumSolidity(uint[] _data) returns(uint o_sum) {
+        for (uint i = 0; i < _data.length; ++i)
+            o_sum += _data[i];
+    }
 
-        // We know that we only access the array in bounds, so we can avoid the check.
-        // 0x20 needs to be added to an array because the first slot contains the
-        // array length.
-        function sumAsm(uint[] _data) returns (uint o_sum) {
-            for (uint i = 0; i < _data.length; ++i) {
-                assembly {
-                    o_sum := mload(add(add(_data, 0x20), i))
-                }
+    // We know that we only access the array in bounds, so we can avoid the check.
+    // 0x20 needs to be added to an array because the first slot contains the
+    // array length.
+    function sumAsm(uint[] _data) returns(uint o_sum) {
+        for (uint i = 0; i < _data.length; ++i) {
+            assembly {
+                o_sum := mload(add(add(_data, 0x20), i))
             }
         }
     }
+}
+```
 
 ]
 
@@ -1124,10 +1264,10 @@ Remember this guy?
 > Do not develop Solidity contracts without a reasonable grasp of the underlying Ethereum Virtual Machine execution model, particularly around gas costs.
 
 We're about to see why this stuff is so scary.
-]
 
-???
-:TODO: random img
+.center[<img src="res/randart/scared.jpg" width="400" />]
+
+]
 
 
 
@@ -1169,7 +1309,29 @@ name: internal-and-external-interfaces
 ]
 .right-column[
 
-As mentioned, the EVM has many languages which compile down to its CPU bytecode. As such, there is a lower-level API available between contracts with a more restricted set of datatypes (known as the *Contract ABI* or *"Application Binary Interface"*) which must be used when calling between them (Serpent doesn't know about the types of data structures Solidity supports, for example). This also applies even when calling a contract's own methods via the `this` pointer.
+As mentioned, the EVM has many languages which compile down to its CPU bytecode. As such, there is a lower-level API available between contracts with a more restricted set of datatypes (known as the *Contract ABI* or *"Application Binary Interface"*) which must be used when calling between them (Serpent doesn't know about the types of data structures Solidity supports, for example).  
+.caveat[This also applies when calling a contract's own methods via the `this` pointer.]
+
+.center[
+<img src="res/contract-interfaces.png" height="450" />
+]
+
+]
+
+
+
+
+
+
+
+
+---
+.left-column[
+<h1>Contracts calling contracts</h1>
+<h2>Method visibility</h2>
+<h2>Internal and external interfaces</h2>
+]
+.right-column[
 
 .caveat[Method access operates very differently depending on the calling context.]
 
@@ -1178,11 +1340,6 @@ As mentioned, the EVM has many languages which compile down to its CPU bytecode.
 - Since external function calls happen at the ABI level, they can only handle fundamental data types. Any complex data you wish to pass between functions must include encoding / decoding logic. .caveat[Data passed through all external method calls is copied by value.]
 
 ]
-
-???
-:TODO: picture needed <!--picABI-->
-
-:TODO: work out what the caveats are
 
 
 
@@ -1204,16 +1361,18 @@ Solidity's more complex datatypes can't be passed through external contract func
 - Internal contract methods and methods of superclasses: All Solidity datatypes allowed, accessed directly
 - Other contract methods: Only ABI datatypes allowed, accessed via `call` and `delegatecall`
 
-*However*- watch this space. I strongly suspect that if one has access to the source code of a contract then it could be applied over an address where said contract has been uploaded as a typecast in future (ie. `KnownContract(0x123ABetc)`), as is done automatically by Mix with contracts within your project.
+*However*- if one has access to the header files of a contract then its constructor can be applied over a known address where said contract has been uploaded as a typecast (ie. `KnownContract(0x123ABCEF)`), as is done automatically by Mix with contracts within your project. You can then use the existing contract's internal Solidity datatypes as usual.
+
+To interface with a known contract from the Dapp layer, you'll need to generate an ABI definition for it. The [solidity-abi](https://github.com/blockapps/solidity-abi/) Haskell library can do this, or you can paste the source code into http://chriseth.github.io/browser-solidity and copy the `interface` value.
+
 ]
 
 ???
-:TODO: 
-well, this seems to contradict that assumption (from docs):
-
-> If a contract wants to create another contract, the source code (and the binary) of the created contract has to be known to the creator. This means that cyclic creation dependencies are impossible.
-
-might be able to test this in Mix- see if source can be associated with an address manually on the testnet after clearing Mix settings
+Summary:
+- You can only pass simple datatypes between contracts, and need to handle the encoding / decoding yourself.
+- Header files and "ABI Description Files" provide interfaces to deployed contracts.
+- Header files look like class definitions without method stubs, and allow interacting with contract APIs already deployed on the blockchain.
+- Docs on header files were extremely hard to find, and I only stumbled across them via the Consensys stdlib repo. YMMV.
 
 :TODO: string ABI passing example
 
@@ -1249,6 +1408,7 @@ This will cause any funds sent in the transaction to be returned and the transac
 ]
 
 ???
+Summary: fallback functions define what to do when a contract is sent money without any method being invoked. This applies to parameterless `call` as well.
 
 :TODO: check that fallbacks are always public
 
@@ -1276,13 +1436,73 @@ If you want to think about this in JavaScript terms, you can think of `address` 
 When we know what's contained within a contract, we can typecast the address to the known signature of our contract bytecode, and interact with it using our own API:
 
 ```
-:TODO:
+contract Test {
+    function a() returns(uint) {
+        return 0;
+    }
+}
+
+contract Tester {
+    function runTest(address t) {
+*       address testInstance = Test(t);
+*       return testInstance.a();
+    }
+}
 ```
+
+Note we also need to typecast with `address(this)` when passing our own address to other contract methods.
 
 ]
 
 ???
+Summary: `address` is a superclass of all contracts, and typecasting works as you'd expect.
+
 :TODO: need to find out how to get return values out of calling other contracts' methods (internal and external ones)
+
+
+
+
+
+
+---
+.left-column[
+<h1>Contracts calling contracts</h1>
+<h2>Method visibility</h2>
+<h2>Int'l & ext'l interfaces</h2>
+<h2>Reference types & i'faces</h2>
+<h2>Contract fallback functions</h2>
+<h2>Contracts as addresses</h2>
+]
+.right-column[
+#### How to check the type of an address?
+
+You can't, though you may be able to test for an exception when attempting to invoke a non-existent method. But in practise, you won't need to- you'll likely implement a name registry type contract which registers the addresses of contracts in your system and looks them up in order to ensure that all passed parameters are valid.
+
+Of course, this method requires that the name registry itself is permissioned in such a way that only a trusted party can update the contracts. 
+
+Incomplete example from Eris tutorials, with their `DOUG` name registry being used:
+
+```
+// The bank database
+contract BankDb is DougEnabled {
+
+    mapping (address => uint) public balances;
+
+    function deposit(address addr) returns(bool res) {
+*       if(DOUG != 0x0){
+*           address bank = ContractProvider(DOUG).contracts("bank");
+*           if (msg.sender == bank ){
+                balances[addr] += msg.value;
+                return true;
+            }
+        }
+        // Return if deposit cannot be made.
+        msg.sender.send(msg.value);
+        return false;
+    }
+```
+]
+
 
 
 
@@ -1303,24 +1523,26 @@ name: contracts-creating-contracts
 ]
 .right-column[
 
-Note the brackets needed in order to provide a particular value to the constructor call.
+Note the brackets needed in order to provide a particular value to the constructor call:
 
 ```
-contract B {}
+contract B { /* ... */ }
 
 
 contract A {
     address child;
+    address richChild
 
     function test() {
-        child = (new B).value(10)(); // construct a new B with 10 wei
+        child = new B();
+*       richChild = (new B).value(10)(); // construct a new B with 10 wei
     }
 }
 ```
 
+In this case, `A.child` will end up containing an instance of `B`. Within `B`'s constructor, `msg.sender` will refer to an instace of `A` instead of the usual deploying user account.
+
 ]
-???
-:TODO: finish
 
 
 
@@ -1350,16 +1572,13 @@ A code library in Ethereum is just a contract declared with the `library` keywor
 
 .caveat[When deploying, the library will actually be deployed to a separate contract on the blockchain.] The usual external function `delegatecall` rules apply.
 
-It's important to note the importance of the `storage` keyword in function parameters for libraries. Without this keyword, functions will create a deep copy of any arguments passed in, which is not only expensive in memory consumption but also means that modifying storage directly via library methods would not be possible- which is where the power of `delegatecall` comes from.
+It's important to note the importance of the `storage` keyword in function parameters for libraries. Without this keyword, functions will create a deep copy of any arguments passed in, which is not only expensive in memory consumption but also means that modifying storage directly via library methods would not be possible- and you'd have a read-only library which isn't very useful.
 
 ]
 
 ???
-:TODO: can you pass memory values in as `storage` args?
+:TODO: can you pass memory values in as `storage` args? Probably not.
 
-:TODO: this is interesting cos it means you pretty well *can* just apply a c'tor over an address and interface with it. Is interfacing with other contracts via `delegatecall` any different?
-
-If this turns out to be the case then *All external function call rules apply.* no longer applies!
 
 
 
@@ -1388,7 +1607,7 @@ library Set {
     struct Data { mapping(uint => bool) flags; }
 
     function insert(Data storage self, uint value)
-        returns (bool)
+        returns(bool)
     {
         if (self.flags[value])
             return false; // already there
@@ -1397,7 +1616,7 @@ library Set {
     }
 
     function remove(Data storage self, uint value)
-        returns (bool)
+        returns(bool)
     {
         if (!self.flags[value])
             return false; // not there
@@ -1406,7 +1625,7 @@ library Set {
     }
   
     function contains(Data storage self, uint value)
-        returns (bool)
+        returns(bool)
     {
         return self.flags[value];
     }
@@ -1414,6 +1633,9 @@ library Set {
 ```
 
 ]
+
+???
+Worth noting that this is likely how the Ethereum STL will evolve. Which is *awesome*, because that means the shared computing API really *is* shared...
 
 
 
@@ -1437,20 +1659,24 @@ library Set {
 
 We can import the `Set` type and use its members in derived classes...
 
-    import { Set } from "Set";
+```
+import { Set } from "Set";
 
-    contract C {
-        Set.Data knownValues;
+contract C {
+*   Set.Data knownValues;
 
-        function register(uint value) {
-            // The library functions can be called without a
-            // specific instance of the library, since the
-            // "instance" will be the current contract.
-            if (!Set.insert(knownValues, value))
-                throw;
-        }
-        // In this contract, we can also directly access knownValues.flags, if we want.
+    function register(uint value) {
+        // The library functions can be called without a
+        // specific instance of the library, since the
+        // "instance" will be the current contract.
+*       if (!Set.insert(knownValues, value))
+            throw;
     }
+    // In this contract, we can also directly access knownValues.flags, if we want.
+}
+```
+
+Note that though you might be used to reading this syntax as a static method call- it is not. We are actually calling `Set.insert` with the contract `C` as its context.
     
 ]
 
@@ -1474,25 +1700,27 @@ We can import the `Set` type and use its members in derived classes...
 ]
 .right-column[
 
-...but we can also import the library's contents directly onto the data structure using, err... `using` syntax:
+...but we can also import the library's contents directly over the data structure using, err... `using` syntax:
 
-    import { Set } from "Set";
+```
+import { Set } from "Set";
 
-    contract C {
-        using Set for Set.Data;
-        Set.Data knownValues;
+contract C {
+*   using Set for Set.Data;
+*   Set.Data knownValues;
 
-        function register(uint value) {
-            // Here, all variables of type Set.Data have
-            // corresponding member functions.
-            // The following function call is identical to
-            // Set.insert(knownValues, value)
-            if (!knownValues.insert(value))
-                throw;
-        }
+    function register(uint value) {
+        // Here, all variables of type Set.Data have
+        // corresponding member functions.
+        // The following function call is identical to
+        // Set.insert(knownValues, value)
+*       if (!knownValues.insert(value))
+            throw;
     }
+}
+```
 
-This is a strange-looking control inversion whereby we copy all the library functions onto the destination type; and the context will be passed as the first parameter. It's basically equivalent to currying all the member functions of library `Set` with the type `Set.Data` as the first parameter.
+This is a strange-looking control inversion whereby we copy all the library functions onto the destination type; and the context will be passed as the first parameter. It's basically equivalent to currying all the member functions of library `Set` with a reference to `Set.Data` as the first parameter.
 
 You'll notice I highlighted `self` as a keyword in the earlier library methods&mdash; this seems like a good convention to enforce when using libraries in this manner.
 
@@ -1518,27 +1746,31 @@ You'll notice I highlighted `self` as a keyword in the earlier library methods&m
 ]
 .right-column[
 
-We can do this now within a contract in order to augment base types...
+Note we can also augment the built-in types...
 
-    import { Set } from "Set";
+```
+import { Set } from "Set";
 
-    contract C {
-        using Set for uint[];
-        uint[] knownValues;
+contract C {
+*   using Set for uint[];
+*   uint[] knownValues;
 
-        function register(uint value) {
-            // The following function call is STILL identical to
-            // Set.insert(knownValues, value)
-            if (!knownValues.insert(value))
-                throw;
-        }
+    function register(uint value) {
+        // The following function call is STILL identical to
+        // Set.insert(knownValues, value)
+*       if (!knownValues.insert(value))
+            throw;
     }
+}
+```
 
-Note that in future the `using` declaration may well be lifted to global scope in order to allow project-wide dynamic extension of the built-in types.
+In future the `using` declaration may well be lifted to global scope in order to allow project-wide dynamic extension of the built-in types.
 
-...none of this sounds like an especially good idea to me - didn't we learn our lesson with extending built-in JavaScript prototypes? **If, however** the plan is to enable long-term extension of the language in the same way as modern JavaScript features like `Promise` can be polyfilled in older environments&mdash; well then there are interesting times ahead.
+None of this sounds like an especially good idea to me - didn't we learn our lesson with extending built-in JavaScript prototypes? **If, however** the plan is to enable long-term extension of the language in the same way as modern JavaScript features like `Promise` can be polyfilled in older environments&mdash; well then there are interesting times ahead.
 
 ]
+
+
 
 
 
@@ -1558,11 +1790,14 @@ Consider the following situation:
 - You create a contract called `MyBank`, which simply stores a ledger of user balances in exchange for ether. You deploy an instance of this contract as *"The MyBank"* onto the blockchain. You would like users to not only be able to store tokens within your bank, but be notified when others make deposits and withdrawals.
 - When a user makes a transaction with *The MyBank*, this updates the user's internal balance of some token within the contract.
 - Within the *The MyBank* contract stored on the blockchain, we simply want to change the user's balance and store the new value. 
-    - This balance can be read by anyone, but is only read within our Dapp in order to show it to the owning user. Reading the balances of all users would quickly exhaust browser memory.
-- We can use contract events to broadcast the fact that a transaction happened without having to store the time, value and account ID for every transaction on-chain. We don't need to store this sort of data- it's automatically updated and archived at each step of the EVM's execution!
+- User balances can be read by anyone on demand, but we don't really want to store the time, value and account ID for every transaction on-chain. In fact we don't need to- it's automatically updated and archived in the previous block!
+- We can easily use contract events to broadcast the fact that a transaction happened without having to do this.
 
 <sub><em>*Note loose use of the term "user" &mdash; which could in fact be another contract interacting with 'The MyBank' instead of a person!</em></sub>
 ]
+
+???
+More detail overleaf...
 
 
 
@@ -1582,14 +1817,14 @@ name: event-interface
 >
 > <cite>http://solidity.readthedocs.io/en/latest/frequently-asked-questions.html</cite>
 
-Basically events are ways of easily exposing data to external callers. The blockchain transaction log mechanism is used for this, which is why the behaviour is slightly quirky...
+The blockchain transaction log mechanism is used for events, which is why the behaviour is slightly quirky. Really sending events is just like writing data to the blockchain, except that it doesn't stick around permanently (only for the previous 256 blocks, to be exact). In the previous example, the key element which makes it an appropriate use-case for events is that users *only care about transactions as they happen*; otherwise they only care about current balances.
 
 > Note the dichotomy that a contract can't access events and web3.js is needed, but web3.js can't access return values from a contract invocation. So a pattern of using both an event and a return value like this may be often needed where responding to an event both on and off-chain is desired:
 >
 >```
 >event FooEvent(uint256 n);
 >
->function foo() returns (uint256) {
+>function foo() returns(uint256) {
 >    FooEvent(1337);
 >    return 1337;
 >}
@@ -1624,7 +1859,7 @@ contract MyBank {
     mapping(address, uint) balances;
 
     event TransactionMade(
-        address indexed user, 
+*       address indexed user, 
         uint newBalance, 
         uint timestamp
     );
@@ -1653,7 +1888,7 @@ myContract.TransactionMade().watch((err, result) => {
     );
 });
 myContract.TransactionMade({ 
-    user: web3.eth.defaultAccount 
+*   user: web3.eth.defaultAccount 
 }).watch((err, result) => {
     console.log(
         'I made a transaction:', 
@@ -1670,6 +1905,8 @@ Only #1 fires if another user does it.
 ]
 
 ???
+Summary: indexing events allows client Dapps to bind to particular channels in a more fine-grained way.
+
 :TODO: above needs testing
 
 
@@ -1687,10 +1924,12 @@ name: code-best-practises
 .right-column[
 
 Enough nuts and bolts, how should we write these things?!
-]
 
-???
-:TODO: dumb pic
+<br /><br />
+
+.center[<img src="res/randart/architecture.jpg" />]
+
+]
 
 
 
@@ -1714,6 +1953,8 @@ Only external function calls have an impact on stack depth. Internal functions a
 ]
 
 ???
+Summary: It doesn't really matter when you're calling internal functions, but for external calls you will want to prefer iteration.
+
 :TODO: see if there are any limits on recursion for internal method calls
 
 
@@ -1746,9 +1987,9 @@ Unless you need to iterate, you don't need an array (mappings are sparse).
 ]
 
 ???
-Summary: 
+Summary: arrays add an extra byte but allow you to iterate; use mappings where you can. Remember this only applies to storage variables.
 
-- arrays add an extra byte but allow you to iterate; use mappings where you can.
+If you need to manipulate a lot of data in a mapping, it's going to cost you. You might decide to use structures you can pull out into `memory` variables for manipulation in order to reduce `storage` writes.
 
 
 
@@ -1773,7 +2014,7 @@ Therefore, as a general rule functional composition is a pretty good way to go, 
 
 > Even if a contract inherits from multiple other contracts, only a single contract is created on the blockchain, the code from the base contracts is always copied into the final contract.
 
-Contatenative inheritance means you won't save on chain storage costs by breaking your contracts up into smaller classes. In fact, probably quite the opposite due to the number of extra methods this architecture will likely introduce.
+Contatenative inheritance means you won't save on chain storage costs by breaking your contracts up into smaller classes. In fact, probably quite the opposite due to the number of extra methods this architecture will likely introduce. There will be negligible execution overhead though.
 
 If you're concerned about bytecode storage size, use libraries to organise your shared code instead of base contracts. Ideally base contracts should be kept as lean as possible, since they'll be duplicated every time you deploy a new derived contract that extends from them.
 
@@ -1782,6 +2023,10 @@ If you're concerned about bytecode storage size, use libraries to organise your 
 ]
 
 ???
+Summary: it doesn't matter much in terms of speed, but either technique will lead to larger compiled contract code. Don't create base classes you only use parts of as it will make your contract bigger than necessary (currently).
+
+Note also that inheritance will lead to name collisions.
+
 :TODO: test bytecode size on different inheritance designs
 
 
@@ -1802,19 +2047,24 @@ name: delegates
 
 `delegatecall` is the solution for structuring your pure library code: allowing you to put common code in places and run it without polluting method namespace of contracts you're creating. Note that mostly you won't even have to use the method manually- when you use Libraries with Mix, the IDE will automatically link your contracts and allow you to write the call as if it were a normal contract within your project.
 
-It's worth noting that delegates and libraries are the only ways to reuse code between contracts at a CPU level. All other conveniences are simply ways of organising your code before it's compiled into one glorious blob.
+Delegates are about the easiest way to decouple logic from data- simply move all your logic to another contract and assign a reference to its deployed address when you deploy contracts making use of it. More at https://docs.erisindustries.com/tutorials/solidity/solidity-7/
+
+It's worth noting that **delegates and libraries are the only ways to reuse code between contracts at a CPU level**. All other conveniences are simply ways of organising your code before it's compiled into one glorious blob.
 
 ]
 
 ???
+Summary: delegates allow CPU-level code reuse and so create smaller contracts than inheritance-based designs; at the expense of extra external function calls.
+
 :TODO: update this slide when determined whether manually linking library contracts is doable.
 
 
 
 
 
+<!--
 
----
+
 name: function-pointers
 .left-column[
 <h1>Code best-practises</h1>
@@ -1841,10 +2091,7 @@ Though these are noted as a *'quirk'* in the documentation, function pointers mi
 
 ]
 
-???
-:TODO: finish this
-:TODO: can I recommend to always access state vars via `this`? no difference in cost?
-
+-->
 
 
 
@@ -1858,34 +2105,71 @@ name: contract-design-patterns
 <h2>Mapping vs. Array</h2>
 <h2>Composition or inheritance</h2>
 <h2>Delegates</h2>
-<h2>Function pointers</h2>
+<!--<h2>Function pointers</h2>-->
 ## Contract design patterns
 ]
 .right-column[
 
+Some opinions that are worth a read:
+
+http://ethereum.stackexchange.com/questions/2404/upgradeable-contracts  
+https://ethereum.stackexchange.com/questions/1134/what-design-patterns-are-appropriate-for-data-structure-modification-within-ethe
+
 Do you really want to make your contract self-destruct?
 
 > If Ether is sent to removed contracts, the Ether will be forever lost.
-
-<!-- :TODO: the docs say the contract will continue to be written to blocks if not removed, presume this is only for blocks that involve the contract but pays to check -->
-
-https://ethereum.stackexchange.com/questions/1134/what-design-patterns-are-appropriate-for-data-structure-modification-within-ethe?newreg=c176baafe7254727b892b6c257938950
-
-http://ethereum.stackexchange.com/questions/2159/guidelines-for-designing-contracts-to-handle-bugfixes/2162#2162
+> 
+> <cite>http://solidity.readthedocs.io/en/latest/frequently-asked-questions.html</cite>
 
 Redeploying at the same address is impossible.  
 *(unless you can cause a hash collision hurrrr)*
 
 > As for bugfixes, the common pattern is to have proxy or lookup contracts to be a gateway to the real one, which in case of a change or bugfix would be replaced. Replacing it also means losing the old storage contents.
+>
+> <cite>http://ethereum.stackexchange.com/a/2162/2665</cite>
+
+The key items in any proxy contract will be storage of its target contract address and a function similar to this: `function forward(address addr) { addr.call(msg.data); }`
 
 ]
 
 ???
-:TODO: examples of classes needed
+Summary: contracts for managing other contracts are important for dealing with immutability.
 
-:TODO: investigate function pointers further.. this is a thing for toggling behaviour!
+:TODO: the docs say the contract will continue to be written to blocks if not removed, presume this is only for blocks that involve the contract but pays to check
+
+:TODO: can I recommend to always access state vars via `this`? no difference in cost?
 
 :TODO: investigate ways of migrating contract state.. `exportable` base contract?
+
+
+
+
+
+
+---
+.left-column[
+<h1>Code best-practises</h1>
+<h2>Iteration vs recursion</h2>
+<h2>Mapping vs. Array</h2>
+<h2>Composition or inheritance</h2>
+<h2>Delegates</h2>
+<h2>Contract design patterns</h2>
+]
+.right-column[
+<h3>Eris Industries' "Five Types" model:</h3>
+
+- **Database contracts**: storage only (read / write APIs)
+- **Controller contracts**: program logic to operate on storage contracts. Batched writes, redundant storage etc.
+- **Contract management contracts**: name registries, proxies etc. Contracts which exist to help make modular design easier.
+- **Application logic contracts**: higher-level entities which operate on controller contracts as well as other types to achieve specific application-level objectives. These are the only contracts you really want external users interacting with.
+- **Utility contracts**: think libraries. String manipulation, random number generation and so on.
+
+Thinking of your contracts in these terms will be extremely helpful in building maintainable, scalable systems.
+
+<h3>Action-driven architecture</h3>
+
+Creating contracts to represent actions within your system can be a powerful way of structuring things where the utmost flexibility is required. However, it can lead to a lot of extra complexity- https://docs.erisindustries.com/tutorials/solidity/solidity-2/
+]
 
 
 
@@ -1907,6 +2191,9 @@ You can consider all of these a <span class="caveat">&hellip;</span>
 
 Further reading: http://solidity.readthedocs.io/en/latest/miscellaneous.html#pitfalls
 
+???
+The loop one is pretty heinous.
+
 
 
 
@@ -1925,7 +2212,7 @@ Spot the bug:
 function splitDAO(
     uint _proposalID,
     address _newCurator
-) noEther onlyTokenholders returns (bool _success) {
+) noEther onlyTokenholders returns(bool _success) {
 
     // ...
 
@@ -1937,13 +2224,17 @@ function splitDAO(
     paidOut[msg.sender] = 0;
     return true;
 }
+
+function transfer(address _to, uint256 _value) returns(bool success) { /* ... */ }
+
+event Transfer(address indexed _from, address indexed _to, uint256 _amount);
 ```
 
 ]
 .col2-right[
 
 ```
-function withdrawRewardFor(address _account) noEther internal returns (bool _success) {
+function withdrawRewardFor(address _account) noEther internal returns(bool _success) {
     if ((balanceOf(_account) * rewardAccount.accumulatedInput()) / totalSupply < paidOut[_account])
         throw;
 
@@ -1958,7 +2249,7 @@ function withdrawRewardFor(address _account) noEther internal returns (bool _suc
 // ...
 
 
-function payOut(address _recipient, uint _amount) returns (bool) {
+function payOut(address _recipient, uint _amount) returns(bool) {
     if (msg.sender != owner || msg.value > 0 || (payOwnerOnly && _recipient != owner))
         throw;
     if (_recipient.call.value(_amount)()) {
@@ -1972,34 +2263,98 @@ function payOut(address _recipient, uint _amount) returns (bool) {
 
 ]
 
+???
+Spotting the bug is supposed to be a rhetorical exercise :p
+
+
+
+
 
 
 
 
 
 ---
-name: short-version
-## Short version
+.center[
+<img src="res/dao-hack1.png" height="450" style="margin-top: -1em;" />
+]
 
-- `splitDAO`(1) calls `withdrawRewardFor` calls `payOut`.
-- `payOut` returns false if transferring the balance to the recipient of the split fails. I am reasonably sure this is good architecture- it allows `payOut` to be safely used on arrays of addresses to refund in bulk.
-- However, `withdrawRewardFor` throws if `rewardAccount.payOut` fails! This can cause any operation `withdrawRewardFor` is involved in to fail.
-- But, `splitDAO` is public...
-- So the attacker can use a fallback function in their own contract (fired when `payOut` runs `_recipient.call.value(_amount)()`) to call `splitDAO` *while the original `splitDAO` call is still running*...
-    - `splitDAO`(2) calls `withdrawRewardFor` calls `payOut`...
-    - The original call (1) to `splitDAO` has still not run `balances[msg.sender] = 0;`... so `payOut` transfers the same balance back to the attacking contract as before...
-    - This continues until the artificial EVM stack depth limit is reached (1024).
-- The original `payOut` function will eventually get back a 'stack depth limit exceeded' exception from the original `_recipient.call.value(_amount)()` and return `false`.
-- The original `withdrawRewardFor` function *throws* - and the balances are never reset! It's as if the attacker never withdrew from The DAO in the first place.
+- The attacker calls `splitDAO`, which calls `withdrawRewardFor` and then `payOut`. They provide extra gas in order to recursively run more function calls than TheDAO intended. `payOut` reads the splitter's balance and attempts to refund their ether to exit them from the DAO.
 
 ???
-:TODO: yeah need more here, split this into stages with diagrams
+Some background on the splitting process might be necessary.
 
-https://pdaian.com/blog/chasing-the-dao-attackers-wake/  
-http://vessenes.com/more-ethereum-attacks-race-to-empty-is-the-real-deal/  
-http://hackingdistributed.com/2016/06/16/scanning-live-ethereum-contracts-for-bugs/  
-http://vessenes.com/ethereum-griefing-wallets-send-w-throw-considered-harmful/  
-http://vessenes.com/deconstructing-thedao-attack-a-brief-code-tour/
+
+---
+.center[
+<img src="res/dao-hack2.png" height="450" style="margin-top: -1em;" />
+]
+
+- But, `splitDAO` is public...
+- So the attacker can use a fallback function in their own contract (fired when `payOut` runs `_recipient.call.value(_amount)()`) to call `splitDAO` *while the original `splitDAO` call is still running*...
+
+
+---
+.center[
+<img src="res/dao-hack3.png" height="450" style="margin-top: -1em;" />
+]
+
+- `splitDAO`(2) calls `withdrawRewardFor` calls `payOut`...
+- The original call (1) to `splitDAO` has still not run `balances[msg.sender] = 0;`... so `payOut` transfers the same balance back to the attacking contract as before...
+
+
+---
+.center[
+<img src="res/dao-hack4.png" height="450" style="margin-top: -1em;" />
+]
+
+- This continues a few times until the attacker has spent all the gas they originally provided to the transaction. They are careful to stop before the artificial EVM stack depth limit is reached (1024), as this would cause everything to roll back.
+
+
+---
+.center[
+<img src="res/dao-hack5.png" height="450" style="margin-top: -1em;" />
+]
+
+- Each `payOut` function will eventually finalize and return, and `splitDAO` will call the `Transfer` event each time in order to transfer its internal tokens over to the new split DAO... pity it should have called the `transfer` **function** instead...
+
+
+---
+.center[
+<img src="res/dao-hack6.png" height="450" style="margin-top: -1em;" />
+]
+
+- Without `transfer` being called to correctly finalise the split, the attacker is free to move their DAO tokens into a secondary contract at the time their inner call to `splitDAO` returns, leaving the DAO thinking the recipient's tokens have been correctly moved across.
+
+
+---
+.center[
+<img src="res/dao-hack7.png" height="450" style="margin-top: -1em;" />
+]
+
+- They can then move these tokens back into the original account and start the process all over again.
+
+
+
+
+---
+<h1>...so what went wrong?</h1>
+
+In a sentence: managing state mutations in a permissionless, non-transactional system is super hard.
+
+Functional programming tenet: **state is evil.**
+
+<h3>Further reading</h3>
+
+- https://pdaian.com/blog/chasing-the-dao-attackers-wake/
+- http://vessenes.com/more-ethereum-attacks-race-to-empty-is-the-real-deal/
+- http://hackingdistributed.com/2016/06/16/scanning-live-ethereum-contracts-for-bugs/
+- http://vessenes.com/ethereum-griefing-wallets-send-w-throw-considered-harmful/
+- http://vessenes.com/deconstructing-thedao-attack-a-brief-code-tour/
+- https://github.com/ConsenSys/smart-contract-best-practices#smart-contract-security-bibliography (includes all of the above, and more)
+
+???
+We've made this mistake many times before in software.
 
 
 
@@ -2015,12 +2370,12 @@ name: guidelines-to-avoid-this-pitfall
 - If these interactions fail, handle the effect in a way which **does not interfere** with **any other address** being processed.
 - Presume any methods in your contract other than `internal` and `private` ones will be called by contracts other than those you expect.
 - **Always** specify a gas amount when calling other contracts (which prevents them being attackable by sending any amount of gas).
-- Also never presume that an address implies a user. An address does not guarantee a real person.
 - Use `send` instead of `call` wherever possible. Even then, ensure you **handle failures correctly**, and again, update your contract's own state **first**.
   > send is safer to use since by default it doesn't forward any gas, so the receiver's fallback function can only emit events.
   >
   > <cite>http://ethereum.stackexchange.com/a/6474/2665</cite>
 - Presume any call to an externally accessible contract method you define may run out of gas and fail.
+- Never presume that an address implies a user. An address does not guarantee a real person.
 
 Always remember, there are:
 
@@ -2030,12 +2385,13 @@ Always remember, there are:
 Imagine it as if another thread might come in and modify your memory at any time. If the hash of the contract you're interacting with matches some source, then you can predict it just fine. If not- all bets are off and *any* of your externally accessible methods may be called.
 
 ???
-"Specify a gas amount"- because an external contract might send heaps of gas into a method in order to be able to recursively call back into your own contract many times over. Limiting gas reduces this risk.
+All these things are really about guarding against race conditions.
 
-:TODO: some discussion of DAO framework v1 and test cases
+"Specify a gas amount"- because an external contract might send heaps of gas into a method in order to be able to recursively call back into your own contract many times over. Limiting gas reduces this risk.
 
 :TODO: check if ref vars update in response to other contracts mutating them
 
+:TODO: suggest better naming convention for events
 
 
 
@@ -2053,30 +2409,40 @@ Imagine it as if another thread might come in and modify your memory at any time
 <img src="res/randart/functional-squirrel.jpg" />
 ]
 
+???
+Some discussion of DAO framework v1 and test cases
+
 
 
 
 ---
 name: other-vulnerabilities
+
+.col2-left[
 # Other 'vulnerabilities'
 
-Headlines like "[Solarstorm: A security exploit with Ethereum’s Solidity language, not just the DAO](https://blog.blockstack.org/solar-storm-a-serious-security-exploit-with-ethereum-not-just-the-dao-a03d797d98fa)" are very catchy but don't amount to much when one stops to think about how computers operate. This is just how you'd want programs to run, sometimes. Sometimes a function calls a function in another class that calls back to the object that started it all. It's not even uncommon. So to disallow *that* would be to disallow, you know, writing code. 
+Headlines like "[Solarstorm: A security exploit with Ethereum’s Solidity language, not just the DAO](https://blog.blockstack.org/solar-storm-a-serious-security-exploit-with-ethereum-not-just-the-dao-a03d797d98fa)" are very catchy but don't amount to much when one stops to think about how computers operate. This is just how you'd want programs to run, sometimes. Sometimes a function calls a function in another class that calls back to the object that started it all. It's not even uncommon. So to disallow *that* would be to disallow, you know, logic.
 
-If you're gonna be writing code, you're gonna get some rat faeces in there. *Everything is Terrible*&trade;
+If you're gonna be writing code, you're gonna get some rat faeces in there. In software, *Everything is Terrible*&trade;
 
 So let's all calm down for a minute, and think about all these things together.
 
-1. A logic error in a software program does not mean the language is broken.
-2. A vulnerability in a language does not mean the underlying CPU is broken.
-3. A language which allows sloppy code need not be doomed if good tooling can be built around it... but a language which definitively prevents sloppy code is always going to be better.
+1. **A logic error in a software program does not mean the language is broken.**
+2. **A vulnerability in a language does not mean the underlying CPU is broken.**
+3. **A language which allows sloppy code need not be doomed if good tooling can be built around it**... but a language which definitively prevents sloppy code is always going to be better.
+
+]
+.col2-right[
+.center[<img src="res/vulnerabilities.png" width="400" />]
+]
 
 ???
-:TODO: diagrams of the two vulnerabilities discussed <!--pic-SL-->
-
-:TODO: checkCaller method decorator thing to ensure caller is an instance of something else?
+Bullet points are all that really needs mentioning here.
 
 But the point still stands- should the network correct & account for these things at a protocol level, or are there cases where the functionality these bugs expose is in fact critical for the funcctioning of the whole platform?
 And if that's the case- then you have a rather awkward catch-22 situation at a core system level.
+
+:TODO: checkCaller method decorator thing to ensure caller is an instance of something else?
 
 
 
@@ -2086,22 +2452,60 @@ name: towards-a-better-language
 # Towards a better language?
 
     
-A purely functional language with a rich type system is needed. If we can't have that right now (see *"The FunArg Problem"*), we need tools to write more bug-free code in the languages we have. The Synero network seems to be making progress in this area with the programming language Rho.
+A purely functional language with a rich type system is needed. If we can't have that right now (see *"The FunArg Problem"*), we need tools to write more bug-free code in the languages we have. The [Synero](http://www.synereo.com/) network seems to be making progress in this area with the programming language [Rho](https://github.com/arshajii/rho). And definitely check out [Tezos](https://tezos.com/), which looks like a likely solution to *all* these problems.
 
 Having written C, C++ and Java but also having written JavaScript using functional methodologies it's easy to see how Solidity *could* be leveraged to build rock-solid Dapps. It's also easy to see how you can shoot yourself in the foot with it. Some code smells we seem to be repeating here:
 
-- Contracts in Solidity are basically like *"mixins"* in JavaScript. Without well-named base classes, name collisions and cluttered contract namespaces seem inevitable.
-- Implicit state access between scope is always a bad idea. Always. PHP is the only imperative language I've used that manages lexical scope 'safely'.
+- Contracts in Solidity are basically like *"mixins"* in JavaScript. Even with a well-defined standard library, name collisions and cluttered contract namespaces seem inevitable.
+- In my experience, shadowing and implicit state access between scope is always a bad idea. Always. I would like to see a compiler error where two variable names conflict.
 - Being super strict with types and then automatically typecasting a complex `account` object over a 160-bit integer seems like an odd choice :/
 - Creating a paradigm where monolithic contracts are the norm for efficiency reasons is bad for code quality and logic isolation reasons. I don't know if this is happening or what the solution is, but that mindset should be avoided...
 
 ???
+Note that "a better language" likely depends on what you need. A formally verifiable one is probably going to be slower- but if Tezos is POS at release then it'll be way faster than Ethereum's POW anyway.
+
+A discussion on proof-based languages for smart contracts: https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s
+
 :TODO: test if name collisions do in fact happen
 
-:TODO:
-https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s   (discussion on proof-based languages for smart contracts)
 
-Solidity 2.0 roadmap
+
+
+
+
+
+
+---
+name: solidity-2.0-roadmap
+
+# Solidity 2.0 roadmap
+
+We'll see the *'Natspec'* `@pre` and `@post` conditions on functions being enforced.
+
+We'll possibly see new languages for verifying contracts ([why3](http://why3.lri.fr/try/)) or contract invariants, which might look something like this:
+
+```
+contract GavCoin {
+    invariants:
+        /// @notice The sum total amount of GAV in the system is 1 million.
+        reduce(0, add, map(valueOf, balances)) == 100000000000;
+}
+```
+
+And we'll hopefully see the introduction of the `dynamic` keyword, which probably relates to the following:
+
+> This specification does not address contracts whose interface is dynamic or otherwise known only at run-time. Should these cases become important they can be adequately handled as facilities built within the Ethereum ecosystem.
+>
+> <cite>https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI</cite>
+
+So Solidity's future could be pretty bright, actually!
+
+
+???
+Docs on these things were hard to find.
+
+Invariants are a lot like formal proofs for the contract actually.
+
 
 
 
@@ -2114,8 +2518,11 @@ Solidity 2.0 roadmap
 name: in-the-meantime
 # In the meantime
 
-For now, unit tests and better code analysis tools are important. If we can write error-free code in JavaScript using linters and test runners then we can do it here, too... let's just not forget: all software is terrible and .superstress[all risks are amplified].
+For now, unit tests and better code analysis tools are important. If we can write error-free code in JavaScript using linters and test runners then we can do it here, too... let's just not forget: all software is terrible, and on the blockchain .superstress[all risks are amplified].
 
+- https://github.com/weifund/solint - **soon!**
+- https://github.com/raineorshine/solgraph - contract DOT callgraph generator
+- Look out for [Oyente](http://www.comp.nus.edu.sg/%7Eloiluu/papers/oyente.pdf), a code analysis tool being written in Python which will detect such vulnerabilities (and a few others).
 
 
 
@@ -2136,17 +2543,37 @@ name: unit-testing-frameworks
 >
 > <cite>https://docs.erisindustries.com/tutorials/solidity/solidity-4/</cite>
 
-https://github.com/smartcontractproduction/sol-unit
-- Simulates executing using the JavaScript VM https://github.com/ethereumjs/ethereumjs-vm
-- Interface is a base `Test` contract providing assertion methods to be extended from, which should create instances of your testee contracts internally in order to run its tests.
+???
+Whether you consider some of those outer layers unit tests or integration tests is debateable.
 
-https://github.com/androlo/sol-tester
 
-https://github.com/nexusdev/dapple/blob/master/doc/test.md
+
+
+
+
+---
+<h2>Unit testing frameworks</h2>
+
+https://github.com/ether-camp/ethereum-testing-reference
+
+- Runs tests using the JS interface and asserts them in the browser, so these are really more like integration tests for ordered transactions.
+
+https://github.com/androlo/sol-tester & https://github.com/smartcontractproduction/sol-unit
+
+- Simulates executing using the JavaScript EVM implementation
+- Interface is a base `Test` contract providing assertion methods, which should create instances of your testee contracts internally in order to assert against them. Provides 'real' unit tests in the sense that they're run directly against the code.
+
+http://dapple.readthedocs.io/en/master/
+
+- Is actually a complete Dapp development suite, but contains a similar test runner to `sol-unit`.
+- Early days but seriously worth a look! Provides an IPFS data layer in addition to Solidity compilation & deployment, and text & CLI-driven versions of most of the functionality of Mix (simulating chains, transactions, accounts etc). I expect `dappfile` could easily become a standard.
+- Adds natspec-style debugging: `//@warn`, `//@info`, `//@log` & `//@debug` along with any message containing dynamic blocks delimited by backticks. More at http://dapple.readthedocs.io/en/master/logging/
+
 
 ???
-:TODO: finish this
-:TODO: investigate dapple test suite
+Worth a mention RE integration tests: https://www.destroyallsoftware.com/talks/boundaries
+
+Also unsure what sort of output each of these gives in terms of gas & storage expenditure.
 
 
 
@@ -2211,6 +2638,12 @@ List to come...
 name: function-libraries
 ## Function libraries
 
+- https://github.com/ethereum/wiki/wiki/Solidity-standard-library
+    - `owned` and `mortal` are the only final ones currently
+    - Generic token, configuration & name registry / service lookup proof of concepts
+- https://github.com/ConsenSys/eth-stdlib
+    - `Permissioned`, presumably many more to come
+
 - `CallProxy` (helper)  
   (fun `setCallTarget(account)`)  
   *(however methods are proxied?)*
@@ -2220,9 +2653,14 @@ name: function-libraries
 ???
 :TODO: 
 
-- find a well unit-tested storage framework (or make one)
-- ADTs for efficient storage
+- find a well unit-tested storage contract framework (or make one)
+- ADTs for efficient storage:
+    - Doubly linked list
 - ABI encoders & decoders
+
+Mention useful services:
+  - Ethereum alarm clock
+  - RANDAO https://github.com/randao/randao
 
 <sub>*<em>Please note: you can grab all these by running `./get-example-libs.sh` after cloning this repository.</em></sub>
 
@@ -2235,7 +2673,7 @@ name: final-observations
 # Final observations
 
 - The risks are high with any on-chain language- no software stack to act as padding for bugs.
-- Solidity is a means of direct manipulation of the blockchain database state.
+- Blockchain languages are tools for directly manipulating the blockchain database state.
     - **State is evil!** Uh-oh...
     - Recursive calling vulnerabilities happen due to errors in *ordering state manipulations*
     - There are **no state guarantees** when interacting with external contracts
