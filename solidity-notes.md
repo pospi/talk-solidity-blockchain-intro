@@ -63,6 +63,11 @@ template: start
 
 <h3>A knowledge remix</h3>
 
+???
+Intro self; talk about how after a few years you realise it's all the same thing. This is no different, and if you think a little about what's going on there are reasons for all the weirdnesses.
+
+So hopefully you'll come out of this understanding a bit more about how blockchain computation is the same as regular computing, and what's new about it.
+
 ---
 # Agenda
 
@@ -136,6 +141,9 @@ template: start
 
 <!-- /MarkdownTOC -->
 ]
+
+???
+Lots to get through! Much stuff will be skipped but you can download & review the presentation any time.
 
 
 
@@ -298,7 +306,7 @@ var a = new Array(100);
 a.push(12);
 ```
 
-What is the in-memory length of the array `a` after the script runs?
+What is the length of the array `a` *in memory* after the script runs?
 
 ???
 
@@ -320,22 +328,20 @@ If you didn't answer `200`, and looking up the explanation as to *why* surprised
 name: best-places-to-get-started
 # Best places to get started
 
+<br />
+
 #### Language intros & reference material
 
 - http://solidity.readthedocs.io/ (most up-to-date and current information)
 - https://ethereumbuilders.gitbooks.io/guide/ (an oldie but a goodie, also contains some Serpent documentation)
 
+#### Architecture and best-practises
 
-
-- https://docs.erisindustries.com/tutorials/solidity/ 
+- https://docs.erisindustries.com/tutorials/solidity/ (contains some framework-specific documentation in addition to a wealth of general knowledge)
 
 #### Going deeper
 
 - https://github.com/ethereum/wiki/wiki/
-
-???
-
-:TODO: QA eris docs, may be framework-specific
 
 
 
@@ -474,6 +480,8 @@ name: value-types
 ]
 
 ???
+:TODO: need to check about byte array assignment.. pretty sure that info is old.
+
 EVM word size is 256 bits (I think)
 
 
@@ -862,12 +870,9 @@ The `address` type identifies an account (human or contract). It:
 
 - is equivalent to `uint160` (a 20-byte value), but is also exposed as an object with an interface by the language bindings
 - accessible via `this` for the contract you're writing (remember, a deployed / running contract is just an object in memory). The current contract (and ONLY the current contract) can be destroyed by calling `selfdestruct(address recipient)` and passing the address to send any remaining funds stored in the contract to.
-- All addresses have a `balance` attribute for accessing the balance of that contract or user.
-- You just wrap a constructor around an address to typecast it to the thing you know it is before calling its methods, or you can use types in the function signature too.
-]
+- Has a `balance` attribute for accessing the balance of that contract or user.
 
-???
-:TODO: needs example of typecasting
+]
 
 
 
@@ -903,9 +908,6 @@ All these members of the `address` type are made available by the compiler for y
 - all return a boolean indicating whether the invoked function terminated (`true`) or caused an EVM exception (`false`)
 ]
 
-???
-:TODO: should ensure that addresses behave the same for contracts and humans
-
 
 
 
@@ -940,13 +942,13 @@ Another convenience is the `value` and `gas` methods of all external function re
 
 ```
 contract InfoFeed {
-    function info() returns (uint ret) { return 42; }
+    function info() returns(uint ret) { return 42; }
 }
 
 contract Consumer {
     InfoFeed feed;
     function setFeed(address addr) { feed = InfoFeed(addr); }
-    function callFeed() { feed.info.value(1 ether).gas(800 wei)(); }
+*   function callFeed() { feed.info.value(1 ether).gas(800 wei)(); }
 }
 ```
 
@@ -1146,6 +1148,9 @@ name: contract-structure
         }
     }
   ```
+
+.suggestion[Name abstract base contracts in lower camelcase and derived contracts intended for deployment using upper camelcase] &mdash; there's nothing built in to the language to disambiguate these.
+
 ]
 
 ???
@@ -1208,31 +1213,34 @@ name: inline-assembly
 <h2>Interpreter caveats</h2>
 <h2>Function modifiers</h2>
 <h2>Contract structure</h2>
+<h2>Natspec documentation</h2>
 ## Inline assembly
 ]
 .right-column[
 
 You can write inline assembly, too! - http://solidity.readthedocs.io/en/latest/control-structures.html#inline-assembly
 
-    library VectorSum {
-        // This function is less efficient because the optimizer currently fails to
-        // remove the bounds checks in array access.
-        function sumSolidity(uint[] _data) returns (uint o_sum) {
-            for (uint i = 0; i < _data.length; ++i)
-                o_sum += _data[i];
-        }
+```
+library VectorSum {
+    // This function is less efficient because the optimizer currently fails to
+    // remove the bounds checks in array access.
+    function sumSolidity(uint[] _data) returns(uint o_sum) {
+        for (uint i = 0; i < _data.length; ++i)
+            o_sum += _data[i];
+    }
 
-        // We know that we only access the array in bounds, so we can avoid the check.
-        // 0x20 needs to be added to an array because the first slot contains the
-        // array length.
-        function sumAsm(uint[] _data) returns (uint o_sum) {
-            for (uint i = 0; i < _data.length; ++i) {
-                assembly {
-                    o_sum := mload(add(add(_data, 0x20), i))
-                }
+    // We know that we only access the array in bounds, so we can avoid the check.
+    // 0x20 needs to be added to an array because the first slot contains the
+    // array length.
+    function sumAsm(uint[] _data) returns(uint o_sum) {
+        for (uint i = 0; i < _data.length; ++i) {
+            assembly {
+                o_sum := mload(add(add(_data, 0x20), i))
             }
         }
     }
+}
+```
 
 ]
 
@@ -1353,16 +1361,18 @@ Solidity's more complex datatypes can't be passed through external contract func
 - Internal contract methods and methods of superclasses: All Solidity datatypes allowed, accessed directly
 - Other contract methods: Only ABI datatypes allowed, accessed via `call` and `delegatecall`
 
-*However*- watch this space. I strongly suspect that if one has access to the source code of a contract then it could be applied over an address where said contract has been uploaded as a typecast in future (ie. `KnownContract(0x123ABetc)`), as is done automatically by Mix with contracts within your project.
+*However*- if one has access to the header files of a contract then its constructor can be applied over a known address where said contract has been uploaded as a typecast (ie. `KnownContract(0x123ABCEF)`), as is done automatically by Mix with contracts within your project. You can then use the existing contract's internal Solidity datatypes as usual.
+
+To interface with a known contract from the Dapp layer, you'll need to generate an ABI definition for it. The [solidity-abi](https://github.com/blockapps/solidity-abi/) Haskell library can do this, or you can paste the source code into http://chriseth.github.io/browser-solidity and copy the `interface` value.
+
 ]
 
 ???
-:TODO: 
-well, this seems to contradict that assumption (from docs):
-
-> If a contract wants to create another contract, the source code (and the binary) of the created contract has to be known to the creator. This means that cyclic creation dependencies are impossible.
-
-might be able to test this in Mix- see if source can be associated with an address manually on the testnet after clearing Mix settings
+Summary:
+- You can only pass simple datatypes between contracts, and need to handle the encoding / decoding yourself.
+- Header files and "ABI Description Files" provide interfaces to deployed contracts.
+- Header files look like class definitions without method stubs, and allow interacting with contract APIs already deployed on the blockchain.
+- Docs on header files were extremely hard to find, and I only stumbled across them via the Consensys stdlib repo. YMMV.
 
 :TODO: string ABI passing example
 
@@ -1398,7 +1408,7 @@ This will cause any funds sent in the transaction to be returned and the transac
 ]
 
 ???
-Summary: fallback functions define what to do when a contract is sent money without any method being invoked.
+Summary: fallback functions define what to do when a contract is sent money without any method being invoked. This applies to parameterless `call` as well.
 
 :TODO: check that fallbacks are always public
 
@@ -1426,13 +1436,73 @@ If you want to think about this in JavaScript terms, you can think of `address` 
 When we know what's contained within a contract, we can typecast the address to the known signature of our contract bytecode, and interact with it using our own API:
 
 ```
-:TODO:
+contract Test {
+    function a() returns(uint) {
+        return 0;
+    }
+}
+
+contract Tester {
+    function runTest(address t) {
+*       address testInstance = Test(t);
+*       return testInstance.a();
+    }
+}
 ```
+
+Note we also need to typecast with `address(this)` when passing our own address to other contract methods.
 
 ]
 
 ???
+Summary: `address` is a superclass of all contracts, and typecasting works as you'd expect.
+
 :TODO: need to find out how to get return values out of calling other contracts' methods (internal and external ones)
+
+
+
+
+
+
+---
+.left-column[
+<h1>Contracts calling contracts</h1>
+<h2>Method visibility</h2>
+<h2>Int'l & ext'l interfaces</h2>
+<h2>Reference types & i'faces</h2>
+<h2>Contract fallback functions</h2>
+<h2>Contracts as addresses</h2>
+]
+.right-column[
+#### How to check the type of an address?
+
+You can't, though you may be able to test for an exception when attempting to invoke a non-existent method. But in practise, you won't need to- you'll likely implement a name registry type contract which registers the addresses of contracts in your system and looks them up in order to ensure that all passed parameters are valid.
+
+Of course, this method requires that the name registry itself is permissioned in such a way that only a trusted party can update the contracts. 
+
+Incomplete example from Eris tutorials, with their `DOUG` name registry being used:
+
+```
+// The bank database
+contract BankDb is DougEnabled {
+
+    mapping (address => uint) public balances;
+
+    function deposit(address addr) returns(bool res) {
+*       if(DOUG != 0x0){
+*           address bank = ContractProvider(DOUG).contracts("bank");
+*           if (msg.sender == bank ){
+                balances[addr] += msg.value;
+                return true;
+            }
+        }
+        // Return if deposit cannot be made.
+        msg.sender.send(msg.value);
+        return false;
+    }
+```
+]
+
 
 
 
@@ -1453,24 +1523,26 @@ name: contracts-creating-contracts
 ]
 .right-column[
 
-Note the brackets needed in order to provide a particular value to the constructor call.
+Note the brackets needed in order to provide a particular value to the constructor call:
 
 ```
-contract B {}
+contract B { /* ... */ }
 
 
 contract A {
     address child;
+    address richChild
 
     function test() {
-        child = (new B).value(10)(); // construct a new B with 10 wei
+        child = new B();
+*       richChild = (new B).value(10)(); // construct a new B with 10 wei
     }
 }
 ```
 
+In this case, `A.child` will end up containing an instance of `B`. Within `B`'s constructor, `msg.sender` will refer to an instace of `A` instead of the usual deploying user account.
+
 ]
-???
-:TODO: finish
 
 
 
@@ -1500,16 +1572,13 @@ A code library in Ethereum is just a contract declared with the `library` keywor
 
 .caveat[When deploying, the library will actually be deployed to a separate contract on the blockchain.] The usual external function `delegatecall` rules apply.
 
-It's important to note the importance of the `storage` keyword in function parameters for libraries. Without this keyword, functions will create a deep copy of any arguments passed in, which is not only expensive in memory consumption but also means that modifying storage directly via library methods would not be possible- which is where the power of `delegatecall` comes from.
+It's important to note the importance of the `storage` keyword in function parameters for libraries. Without this keyword, functions will create a deep copy of any arguments passed in, which is not only expensive in memory consumption but also means that modifying storage directly via library methods would not be possible- and you'd have a read-only library which isn't very useful.
 
 ]
 
 ???
-:TODO: can you pass memory values in as `storage` args?
+:TODO: can you pass memory values in as `storage` args? Probably not.
 
-:TODO: this is interesting cos it means you pretty well *can* just apply a c'tor over an address and interface with it. Is interfacing with other contracts via `delegatecall` any different?
-
-If this turns out to be the case then *All external function call rules apply.* no longer applies!
 
 
 
@@ -1538,7 +1607,7 @@ library Set {
     struct Data { mapping(uint => bool) flags; }
 
     function insert(Data storage self, uint value)
-        returns (bool)
+        returns(bool)
     {
         if (self.flags[value])
             return false; // already there
@@ -1547,7 +1616,7 @@ library Set {
     }
 
     function remove(Data storage self, uint value)
-        returns (bool)
+        returns(bool)
     {
         if (!self.flags[value])
             return false; // not there
@@ -1556,7 +1625,7 @@ library Set {
     }
   
     function contains(Data storage self, uint value)
-        returns (bool)
+        returns(bool)
     {
         return self.flags[value];
     }
@@ -1590,20 +1659,24 @@ Worth noting that this is likely how the Ethereum STL will evolve. Which is *awe
 
 We can import the `Set` type and use its members in derived classes...
 
-    import { Set } from "Set";
+```
+import { Set } from "Set";
 
-    contract C {
-        Set.Data knownValues;
+contract C {
+*   Set.Data knownValues;
 
-        function register(uint value) {
-            // The library functions can be called without a
-            // specific instance of the library, since the
-            // "instance" will be the current contract.
-            if (!Set.insert(knownValues, value))
-                throw;
-        }
-        // In this contract, we can also directly access knownValues.flags, if we want.
+    function register(uint value) {
+        // The library functions can be called without a
+        // specific instance of the library, since the
+        // "instance" will be the current contract.
+*       if (!Set.insert(knownValues, value))
+            throw;
     }
+    // In this contract, we can also directly access knownValues.flags, if we want.
+}
+```
+
+Note that though you might be used to reading this syntax as a static method call- it is not. We are actually calling `Set.insert` with the contract `C` as its context.
     
 ]
 
@@ -1627,25 +1700,27 @@ We can import the `Set` type and use its members in derived classes...
 ]
 .right-column[
 
-...but we can also import the library's contents directly onto the data structure using, err... `using` syntax:
+...but we can also import the library's contents directly over the data structure using, err... `using` syntax:
 
-    import { Set } from "Set";
+```
+import { Set } from "Set";
 
-    contract C {
-        using Set for Set.Data;
-        Set.Data knownValues;
+contract C {
+*   using Set for Set.Data;
+*   Set.Data knownValues;
 
-        function register(uint value) {
-            // Here, all variables of type Set.Data have
-            // corresponding member functions.
-            // The following function call is identical to
-            // Set.insert(knownValues, value)
-            if (!knownValues.insert(value))
-                throw;
-        }
+    function register(uint value) {
+        // Here, all variables of type Set.Data have
+        // corresponding member functions.
+        // The following function call is identical to
+        // Set.insert(knownValues, value)
+*       if (!knownValues.insert(value))
+            throw;
     }
+}
+```
 
-This is a strange-looking control inversion whereby we copy all the library functions onto the destination type; and the context will be passed as the first parameter. It's basically equivalent to currying all the member functions of library `Set` with the type `Set.Data` as the first parameter.
+This is a strange-looking control inversion whereby we copy all the library functions onto the destination type; and the context will be passed as the first parameter. It's basically equivalent to currying all the member functions of library `Set` with a reference to `Set.Data` as the first parameter.
 
 You'll notice I highlighted `self` as a keyword in the earlier library methods&mdash; this seems like a good convention to enforce when using libraries in this manner.
 
@@ -1671,27 +1746,31 @@ You'll notice I highlighted `self` as a keyword in the earlier library methods&m
 ]
 .right-column[
 
-We can do this now within a contract in order to augment base types...
+Note we can also augment the built-in types...
 
-    import { Set } from "Set";
+```
+import { Set } from "Set";
 
-    contract C {
-        using Set for uint[];
-        uint[] knownValues;
+contract C {
+*   using Set for uint[];
+*   uint[] knownValues;
 
-        function register(uint value) {
-            // The following function call is STILL identical to
-            // Set.insert(knownValues, value)
-            if (!knownValues.insert(value))
-                throw;
-        }
+    function register(uint value) {
+        // The following function call is STILL identical to
+        // Set.insert(knownValues, value)
+*       if (!knownValues.insert(value))
+            throw;
     }
+}
+```
 
-Note that in future the `using` declaration may well be lifted to global scope in order to allow project-wide dynamic extension of the built-in types.
+In future the `using` declaration may well be lifted to global scope in order to allow project-wide dynamic extension of the built-in types.
 
-...none of this sounds like an especially good idea to me - didn't we learn our lesson with extending built-in JavaScript prototypes? **If, however** the plan is to enable long-term extension of the language in the same way as modern JavaScript features like `Promise` can be polyfilled in older environments&mdash; well then there are interesting times ahead.
+None of this sounds like an especially good idea to me - didn't we learn our lesson with extending built-in JavaScript prototypes? **If, however** the plan is to enable long-term extension of the language in the same way as modern JavaScript features like `Promise` can be polyfilled in older environments&mdash; well then there are interesting times ahead.
 
 ]
+
+
 
 
 
@@ -1716,6 +1795,9 @@ Consider the following situation:
 
 <sub><em>*Note loose use of the term "user" &mdash; which could in fact be another contract interacting with 'The MyBank' instead of a person!</em></sub>
 ]
+
+???
+More detail overleaf...
 
 
 
@@ -1777,7 +1859,7 @@ contract MyBank {
     mapping(address, uint) balances;
 
     event TransactionMade(
-        address indexed user, 
+*       address indexed user, 
         uint newBalance, 
         uint timestamp
     );
@@ -1806,7 +1888,7 @@ myContract.TransactionMade().watch((err, result) => {
     );
 });
 myContract.TransactionMade({ 
-    user: web3.eth.defaultAccount 
+*   user: web3.eth.defaultAccount 
 }).watch((err, result) => {
     console.log(
         'I made a transaction:', 
@@ -1823,6 +1905,8 @@ Only #1 fires if another user does it.
 ]
 
 ???
+Summary: indexing events allows client Dapps to bind to particular channels in a more fine-grained way.
+
 :TODO: above needs testing
 
 
@@ -1840,10 +1924,12 @@ name: code-best-practises
 .right-column[
 
 Enough nuts and bolts, how should we write these things?!
-]
 
-???
-:TODO: dumb pic
+<br /><br />
+
+.center[<img src="res/randart/architecture.jpg" />]
+
+]
 
 
 
@@ -1867,6 +1953,8 @@ Only external function calls have an impact on stack depth. Internal functions a
 ]
 
 ???
+Summary: It doesn't really matter when you're calling internal functions, but for external calls you will want to prefer iteration.
+
 :TODO: see if there are any limits on recursion for internal method calls
 
 
@@ -1899,9 +1987,9 @@ Unless you need to iterate, you don't need an array (mappings are sparse).
 ]
 
 ???
-Summary: 
+Summary: arrays add an extra byte but allow you to iterate; use mappings where you can. Remember this only applies to storage variables.
 
-- arrays add an extra byte but allow you to iterate; use mappings where you can.
+If you need to manipulate a lot of data in a mapping, it's going to cost you. You might decide to use structures you can pull out into `memory` variables for manipulation in order to reduce `storage` writes.
 
 
 
@@ -1926,7 +2014,7 @@ Therefore, as a general rule functional composition is a pretty good way to go, 
 
 > Even if a contract inherits from multiple other contracts, only a single contract is created on the blockchain, the code from the base contracts is always copied into the final contract.
 
-Contatenative inheritance means you won't save on chain storage costs by breaking your contracts up into smaller classes. In fact, probably quite the opposite due to the number of extra methods this architecture will likely introduce.
+Contatenative inheritance means you won't save on chain storage costs by breaking your contracts up into smaller classes. In fact, probably quite the opposite due to the number of extra methods this architecture will likely introduce. There will be negligible execution overhead though.
 
 If you're concerned about bytecode storage size, use libraries to organise your shared code instead of base contracts. Ideally base contracts should be kept as lean as possible, since they'll be duplicated every time you deploy a new derived contract that extends from them.
 
@@ -1935,6 +2023,10 @@ If you're concerned about bytecode storage size, use libraries to organise your 
 ]
 
 ???
+Summary: it doesn't matter much in terms of speed, but either technique will lead to larger compiled contract code. Don't create base classes you only use parts of as it will make your contract bigger than necessary (currently).
+
+Note also that inheritance will lead to name collisions.
+
 :TODO: test bytecode size on different inheritance designs
 
 
@@ -1955,19 +2047,24 @@ name: delegates
 
 `delegatecall` is the solution for structuring your pure library code: allowing you to put common code in places and run it without polluting method namespace of contracts you're creating. Note that mostly you won't even have to use the method manually- when you use Libraries with Mix, the IDE will automatically link your contracts and allow you to write the call as if it were a normal contract within your project.
 
-It's worth noting that delegates and libraries are the only ways to reuse code between contracts at a CPU level. All other conveniences are simply ways of organising your code before it's compiled into one glorious blob.
+Delegates are about the easiest way to decouple logic from data- simply move all your logic to another contract and assign a reference to its deployed address when you deploy contracts making use of it. More at https://docs.erisindustries.com/tutorials/solidity/solidity-7/
+
+It's worth noting that **delegates and libraries are the only ways to reuse code between contracts at a CPU level**. All other conveniences are simply ways of organising your code before it's compiled into one glorious blob.
 
 ]
 
 ???
+Summary: delegates allow CPU-level code reuse and so create smaller contracts than inheritance-based designs; at the expense of extra external function calls.
+
 :TODO: update this slide when determined whether manually linking library contracts is doable.
 
 
 
 
 
+<!--
 
----
+
 name: function-pointers
 .left-column[
 <h1>Code best-practises</h1>
@@ -1994,10 +2091,7 @@ Though these are noted as a *'quirk'* in the documentation, function pointers mi
 
 ]
 
-???
-:TODO: finish this
-:TODO: can I recommend to always access state vars via `this`? no difference in cost?
-
+-->
 
 
 
@@ -2011,34 +2105,71 @@ name: contract-design-patterns
 <h2>Mapping vs. Array</h2>
 <h2>Composition or inheritance</h2>
 <h2>Delegates</h2>
-<h2>Function pointers</h2>
+<!--<h2>Function pointers</h2>-->
 ## Contract design patterns
 ]
 .right-column[
 
+Some opinions that are worth a read:
+
+http://ethereum.stackexchange.com/questions/2404/upgradeable-contracts  
+https://ethereum.stackexchange.com/questions/1134/what-design-patterns-are-appropriate-for-data-structure-modification-within-ethe
+
 Do you really want to make your contract self-destruct?
 
 > If Ether is sent to removed contracts, the Ether will be forever lost.
-
-<!-- :TODO: the docs say the contract will continue to be written to blocks if not removed, presume this is only for blocks that involve the contract but pays to check -->
-
-https://ethereum.stackexchange.com/questions/1134/what-design-patterns-are-appropriate-for-data-structure-modification-within-ethe?newreg=c176baafe7254727b892b6c257938950
-
-http://ethereum.stackexchange.com/questions/2159/guidelines-for-designing-contracts-to-handle-bugfixes/2162#2162
+> 
+> <cite>http://solidity.readthedocs.io/en/latest/frequently-asked-questions.html</cite>
 
 Redeploying at the same address is impossible.  
 *(unless you can cause a hash collision hurrrr)*
 
 > As for bugfixes, the common pattern is to have proxy or lookup contracts to be a gateway to the real one, which in case of a change or bugfix would be replaced. Replacing it also means losing the old storage contents.
+>
+> <cite>http://ethereum.stackexchange.com/a/2162/2665</cite>
+
+The key items in any proxy contract will be storage of its target contract address and a function similar to this: `function forward(address addr) { addr.call(msg.data); }`
 
 ]
 
 ???
-:TODO: examples of classes needed
+Summary: contracts for managing other contracts are important for dealing with immutability.
 
-:TODO: investigate function pointers further.. this is a thing for toggling behaviour!
+:TODO: the docs say the contract will continue to be written to blocks if not removed, presume this is only for blocks that involve the contract but pays to check
+
+:TODO: can I recommend to always access state vars via `this`? no difference in cost?
 
 :TODO: investigate ways of migrating contract state.. `exportable` base contract?
+
+
+
+
+
+
+---
+.left-column[
+<h1>Code best-practises</h1>
+<h2>Iteration vs recursion</h2>
+<h2>Mapping vs. Array</h2>
+<h2>Composition or inheritance</h2>
+<h2>Delegates</h2>
+<h2>Contract design patterns</h2>
+]
+.right-column[
+<h3>Eris Industries' "Five Types" model:</h3>
+
+- **Database contracts**: storage only (read / write APIs)
+- **Controller contracts**: program logic to operate on storage contracts. Batched writes, redundant storage etc.
+- **Contract management contracts**: name registries, proxies etc. Contracts which exist to help make modular design easier.
+- **Application logic contracts**: higher-level entities which operate on controller contracts as well as other types to achieve specific application-level objectives. These are the only contracts you really want external users interacting with.
+- **Utility contracts**: think libraries. String manipulation, random number generation and so on.
+
+Thinking of your contracts in these terms will be extremely helpful in building maintainable, scalable systems.
+
+<h3>Action-driven architecture</h3>
+
+Creating contracts to represent actions within your system can be a powerful way of structuring things where the utmost flexibility is required. However, it can lead to a lot of extra complexity- https://docs.erisindustries.com/tutorials/solidity/solidity-2/
+]
 
 
 
@@ -2060,6 +2191,9 @@ You can consider all of these a <span class="caveat">&hellip;</span>
 
 Further reading: http://solidity.readthedocs.io/en/latest/miscellaneous.html#pitfalls
 
+???
+The loop one is pretty heinous.
+
 
 
 
@@ -2078,7 +2212,7 @@ Spot the bug:
 function splitDAO(
     uint _proposalID,
     address _newCurator
-) noEther onlyTokenholders returns (bool _success) {
+) noEther onlyTokenholders returns(bool _success) {
 
     // ...
 
@@ -2091,7 +2225,7 @@ function splitDAO(
     return true;
 }
 
-function transfer(address _to, uint256 _value) returns (bool success) { /* ... */ }
+function transfer(address _to, uint256 _value) returns(bool success) { /* ... */ }
 
 event Transfer(address indexed _from, address indexed _to, uint256 _amount);
 ```
@@ -2100,7 +2234,7 @@ event Transfer(address indexed _from, address indexed _to, uint256 _amount);
 .col2-right[
 
 ```
-function withdrawRewardFor(address _account) noEther internal returns (bool _success) {
+function withdrawRewardFor(address _account) noEther internal returns(bool _success) {
     if ((balanceOf(_account) * rewardAccount.accumulatedInput()) / totalSupply < paidOut[_account])
         throw;
 
@@ -2115,7 +2249,7 @@ function withdrawRewardFor(address _account) noEther internal returns (bool _suc
 // ...
 
 
-function payOut(address _recipient, uint _amount) returns (bool) {
+function payOut(address _recipient, uint _amount) returns(bool) {
     if (msg.sender != owner || msg.value > 0 || (payOwnerOnly && _recipient != owner))
         throw;
     if (_recipient.call.value(_amount)()) {
@@ -2130,7 +2264,7 @@ function payOut(address _recipient, uint _amount) returns (bool) {
 ]
 
 ???
-Spotting the bug is not supposed to be easy :p
+Spotting the bug is supposed to be a rhetorical exercise :p
 
 
 
@@ -2217,7 +2351,10 @@ Functional programming tenet: **state is evil.**
 - http://hackingdistributed.com/2016/06/16/scanning-live-ethereum-contracts-for-bugs/
 - http://vessenes.com/ethereum-griefing-wallets-send-w-throw-considered-harmful/
 - http://vessenes.com/deconstructing-thedao-attack-a-brief-code-tour/
-- https://github.com/ConsenSys/smart-contract-best-practices#smart-contract-security-bibliography (all of the above, and more)
+- https://github.com/ConsenSys/smart-contract-best-practices#smart-contract-security-bibliography (includes all of the above, and more)
+
+???
+We've made this mistake many times before in software.
 
 
 
@@ -2248,6 +2385,8 @@ Always remember, there are:
 Imagine it as if another thread might come in and modify your memory at any time. If the hash of the contract you're interacting with matches some source, then you can predict it just fine. If not- all bets are off and *any* of your externally accessible methods may be called.
 
 ???
+All these things are really about guarding against race conditions.
+
 "Specify a gas amount"- because an external contract might send heaps of gas into a method in order to be able to recursively call back into your own contract many times over. Limiting gas reduces this risk.
 
 :TODO: check if ref vars update in response to other contracts mutating them
@@ -2317,15 +2456,17 @@ A purely functional language with a rich type system is needed. If we can't have
 
 Having written C, C++ and Java but also having written JavaScript using functional methodologies it's easy to see how Solidity *could* be leveraged to build rock-solid Dapps. It's also easy to see how you can shoot yourself in the foot with it. Some code smells we seem to be repeating here:
 
-- Contracts in Solidity are basically like *"mixins"* in JavaScript. Without a well-defined standard library, name collisions and cluttered contract namespaces seem inevitable.
+- Contracts in Solidity are basically like *"mixins"* in JavaScript. Even with a well-defined standard library, name collisions and cluttered contract namespaces seem inevitable.
 - In my experience, shadowing and implicit state access between scope is always a bad idea. Always. I would like to see a compiler error where two variable names conflict.
 - Being super strict with types and then automatically typecasting a complex `account` object over a 160-bit integer seems like an odd choice :/
 - Creating a paradigm where monolithic contracts are the norm for efficiency reasons is bad for code quality and logic isolation reasons. I don't know if this is happening or what the solution is, but that mindset should be avoided...
 
 ???
-:TODO: test if name collisions do in fact happen
+Note that "a better language" likely depends on what you need. A formally verifiable one is probably going to be slower- but if Tezos is POS at release then it'll be way faster than Ethereum's POW anyway.
 
 A discussion on proof-based languages for smart contracts: https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s
+
+:TODO: test if name collisions do in fact happen
 
 
 
@@ -2377,7 +2518,7 @@ Invariants are a lot like formal proofs for the contract actually.
 name: in-the-meantime
 # In the meantime
 
-For now, unit tests and better code analysis tools are important. If we can write error-free code in JavaScript using linters and test runners then we can do it here, too... let's just not forget: all software is terrible and .superstress[all risks are amplified].
+For now, unit tests and better code analysis tools are important. If we can write error-free code in JavaScript using linters and test runners then we can do it here, too... let's just not forget: all software is terrible, and on the blockchain .superstress[all risks are amplified].
 
 - https://github.com/weifund/solint - **soon!**
 - https://github.com/raineorshine/solgraph - contract DOT callgraph generator
@@ -2401,6 +2542,9 @@ name: unit-testing-frameworks
 > The third tier would be setting accounts up on different machines, and do the transactions over the net.
 >
 > <cite>https://docs.erisindustries.com/tutorials/solidity/solidity-4/</cite>
+
+???
+Whether you consider some of those outer layers unit tests or integration tests is debateable.
 
 
 
@@ -2427,7 +2571,6 @@ http://dapple.readthedocs.io/en/master/
 
 
 ???
-
 Worth a mention RE integration tests: https://www.destroyallsoftware.com/talks/boundaries
 
 
@@ -2509,7 +2652,8 @@ name: function-libraries
 :TODO: 
 
 - find a well unit-tested storage framework (or make one)
-- ADTs for efficient storage
+- ADTs for efficient storage:
+    - Doubly linked list
 - ABI encoders & decoders
 
 <sub>*<em>Please note: you can grab all these by running `./get-example-libs.sh` after cloning this repository.</em></sub>
