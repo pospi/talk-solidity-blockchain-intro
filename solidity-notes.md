@@ -102,6 +102,7 @@ template: start
     - [Interpreter caveats](#interpreter-caveats)
     - [Function modifiers](#function-modifiers)
     - [Contract structure](#contract-structure)
+    - [Natspec documentation](#natspec-documentation)
     - [Inline assembly](#inline-assembly)
 - [Contracts calling contracts](#contracts-calling-contracts)
     - [Method visibility](#method-visibility)
@@ -126,6 +127,7 @@ template: start
     - [Guidelines to avoid this pitfall](#guidelines-to-avoid-this-pitfall)
 - [Other 'vulnerabilities'](#other-vulnerabilities)
 - [Towards a better language?](#towards-a-better-language)
+- [Solidity 2.0 roadmap](#solidity-20-roadmap)
 - [In the meantime](#in-the-meantime)
     - [Unit testing frameworks](#unit-testing-frameworks)
     - [Contract base classes](#contract-base-classes)
@@ -156,6 +158,9 @@ I've used colour coding throughout these slides to differentiate particular role
 - <span style="font-weight: bold; color: #93a1a1;">Light grey</span> is for annotations.
 
 You can find the syntax highlighting package for [highlightjs.org](https://highlightjs.org/) at [github.com/pospi/highlightjs-solidity](https://github.com/pospi/highlightjs-solidity/) or `npm install highlightjs-solidity`.
+
+???
+The main ones you'll want to care about are the oranges, reds and blues; because these indicate contracts and their interactions.
 
 
 
@@ -243,6 +248,9 @@ All compile to EVM bytecode. Solidity was not the first EVM-compiled language, a
 
 ]
 
+???
+Summary: bears mentioning that Solidity is not the only language you can write on top of Ethereum.
+
 
 
 
@@ -312,9 +320,18 @@ If you didn't answer `200`, and looking up the explanation as to *why* surprised
 name: best-places-to-get-started
 # Best places to get started
 
-- http://solidity.readthedocs.io/ (most complete reference material I could find)
+#### Language intros & reference material
+
+- http://solidity.readthedocs.io/ (most up-to-date and current information)
 - https://ethereumbuilders.gitbooks.io/guide/ (an oldie but a goodie, also contains some Serpent documentation)
+
+
+
 - https://docs.erisindustries.com/tutorials/solidity/ 
+
+#### Going deeper
+
+- https://github.com/ethereum/wiki/wiki/
 
 ???
 
@@ -349,10 +366,9 @@ Like .superstress[really important]. Pre-increment vs. post-increment, *'for'* v
 <br /><br /><br /><br />*<sub><em>No, really... look it up. Start here: http://www.coindesk.com/microscope-economic-environmental-costs-bitcoin-mining/</em></sub>
 
 ???
-
 Worth stressing that environmental impact is something that not many people are discussing or even openly acknowledging, and that needs to change.
 
-Also that in no way do any future optimisations or improvements make this less true. When you get down to the basic physics of things, burning energy is burning energy; and we don't have enough of it for everyone right now.
+Also that in no way do any future optimisations or improvements make this less true. When you get down to the basic physics of things, burning energy is burning energy; and we don't have enough of it for everyone right now. We could just as easily ask how many tonnes of CO<sub>2</sub> have been burnt up by ancient code in OpenSSL.
 
 Eth 2.0 / proof of stake, Peercoin, Litecoin & even Ripple (despite its political shortcomings) are great examples of where things should be moving.
 
@@ -420,7 +436,11 @@ name: types
 
 Solidity has the usual memory-centric datatypes we're used to seeing in low-level languages, with some modern conveniences baked in to the compiler.
 
-In other words, it doesn't make the same tradeoffs JavaScript does in terms of providing a dynamic high-level abstraction over the raw data the CPU is crunching. I don't even know why it was billed as a *'JavaScript-like language'*. It's an Algol-derived language like basically every other language that has lots of `{`'s and `(`'s in it. If anything it's *'C-like'*!
+In other words, it doesn't make the same tradeoffs JavaScript does in terms of providing a dynamic high-level abstraction over the raw data the CPU is crunching. 
+
+...I don't even know why it was billed as a *'JavaScript-like language'*. It's an Algol-derived language like basically every other language that has lots of `{`'s and `(`'s in it. If anything it's *'C-like'*!
+
+.center[<img src="res/randart/semantics.jpg" height="290" />]
 ]
 
 
@@ -453,6 +473,9 @@ name: value-types
   .suggestion[Always specify these units when performing time calculations or value transactions for clarity.]
 ]
 
+???
+EVM word size is 256 bits (I think)
+
 
 
 
@@ -478,6 +501,9 @@ contract C {
 .caveat[There is also a `constant` keyword for defining functions as immutable, but it is not yet enforced.]
 
 ]
+
+???
+Summary: Constants compile down to literals and save unnecessary storage space being used up.
 
 
 
@@ -522,14 +548,21 @@ name: data-location
 <h2>Reference types</h2>
 ]
 .right-column[
-
 ### Data location
 
+.col2-left[
 For reference types, we have to think about whether the data they reference is only kept in `memory` while the EVM is running this execution cycle, or if they should persist to `storage`.
 
 > The default for function parameters (including return parameters) is `memory`, the default for local variables is `storage` and the location is forced to `storage` for state variables (obviously).
 >
 > <cite>http://solidity.readthedocs.io/en/latest/types.html#data-location</cite>
+
+]
+.col2-right[
+<img src="res/storage-ref-types.png" width="400" />
+]
+
+<br /><br />
 
 If you continue to think of contracts the same as classes, then these semantics should follow:
 
@@ -571,6 +604,9 @@ Deleting state variables can be done with the `delete` operator. .caveat[Contrac
 .suggestion[always address the full path to data you wish to delete.]
 ]
 
+???
+Summary: in order to store data, all you need to do is use a language keyword!
+
 
 
 
@@ -592,6 +628,9 @@ Note the important distinction or possible .caveat[`storage` is pass-by-value an
 
 For more information, see http://solidity.readthedocs.io/en/latest/types.html#data-location
 ]
+
+???
+Summary: References are dumb and the CPU doesn't care where the data it's modifying lies.
 
 
 
@@ -622,8 +661,7 @@ On the blockchain, there is no such padding. You could probably say Solidity is 
 ]
 
 ???
-
-:TODO: example code and/or <!--picIO-->
+Summary: Everything is closer to the end result. Super convenient, but with great power comes great responsibility.
 
 
 
@@ -656,9 +694,6 @@ name: arrays
     - Size is optional, when ommitted the array length is dynamic- `int8[]`
     - `bytes` acts identically to `uint8[]` or `byte[]`, but is stored without padding and thus packed more tightly in function call data. Use it, it's cheaper!
 ]
-
-???
-:TODO: can bytes be longer than 32?
 
 
 
@@ -1315,6 +1350,7 @@ This will cause any funds sent in the transaction to be returned and the transac
 ]
 
 ???
+Summary: fallback functions define what to do when a contract is sent money without any method being invoked.
 
 :TODO: check that fallbacks are always public
 
@@ -1481,6 +1517,9 @@ library Set {
 
 ]
 
+???
+Worth noting that this is likely how the Ethereum STL will evolve. Which is *awesome*, because that means the shared computing API really *is* shared...
+
 
 
 
@@ -1624,8 +1663,8 @@ Consider the following situation:
 - You create a contract called `MyBank`, which simply stores a ledger of user balances in exchange for ether. You deploy an instance of this contract as *"The MyBank"* onto the blockchain. You would like users to not only be able to store tokens within your bank, but be notified when others make deposits and withdrawals.
 - When a user makes a transaction with *The MyBank*, this updates the user's internal balance of some token within the contract.
 - Within the *The MyBank* contract stored on the blockchain, we simply want to change the user's balance and store the new value. 
-    - This balance can be read by anyone, but is only read within our Dapp in order to show it to the owning user. Reading the balances of all users would quickly exhaust browser memory.
-- We can use contract events to broadcast the fact that a transaction happened without having to store the time, value and account ID for every transaction on-chain. We don't need to store this sort of data- it's automatically updated and archived at each step of the EVM's execution!
+- User balances can be read by anyone on demand, but we don't really want to store the time, value and account ID for every transaction on-chain. In fact we don't need to- it's automatically updated and archived in the previous block!
+- We can easily use contract events to broadcast the fact that a transaction happened without having to do this.
 
 <sub><em>*Note loose use of the term "user" &mdash; which could in fact be another contract interacting with 'The MyBank' instead of a person!</em></sub>
 ]
@@ -1648,14 +1687,14 @@ name: event-interface
 >
 > <cite>http://solidity.readthedocs.io/en/latest/frequently-asked-questions.html</cite>
 
-Basically events are ways of easily exposing data to external callers. The blockchain transaction log mechanism is used for this, which is why the behaviour is slightly quirky...
+The blockchain transaction log mechanism is used for events, which is why the behaviour is slightly quirky. Really sending events is just like writing data to the blockchain, except that it doesn't stick around permanently (only for the previous 256 blocks, to be exact). In the previous example, the key element which makes it an appropriate use-case for events is that users *only care about transactions as they happen*; otherwise they only care about current balances.
 
 > Note the dichotomy that a contract can't access events and web3.js is needed, but web3.js can't access return values from a contract invocation. So a pattern of using both an event and a return value like this may be often needed where responding to an event both on and off-chain is desired:
 >
 >```
 >event FooEvent(uint256 n);
 >
->function foo() returns (uint256) {
+>function foo() returns(uint256) {
 >    FooEvent(1337);
 >    return 1337;
 >}
@@ -2130,6 +2169,7 @@ Functional programming tenet: **state is evil.**
 - http://hackingdistributed.com/2016/06/16/scanning-live-ethereum-contracts-for-bugs/
 - http://vessenes.com/ethereum-griefing-wallets-send-w-throw-considered-harmful/
 - http://vessenes.com/deconstructing-thedao-attack-a-brief-code-tour/
+- https://github.com/ConsenSys/smart-contract-best-practices#smart-contract-security-bibliography (all of the above, and more)
 
 
 
@@ -2194,15 +2234,15 @@ name: other-vulnerabilities
 .col2-left[
 # Other 'vulnerabilities'
 
-Headlines like "[Solarstorm: A security exploit with Ethereum’s Solidity language, not just the DAO](https://blog.blockstack.org/solar-storm-a-serious-security-exploit-with-ethereum-not-just-the-dao-a03d797d98fa)" are very catchy but don't amount to much when one stops to think about how computers operate. This is just how you'd want programs to run, sometimes. Sometimes a function calls a function in another class that calls back to the object that started it all. It's not even uncommon. So to disallow *that* would be to disallow, you know, writing code. 
+Headlines like "[Solarstorm: A security exploit with Ethereum’s Solidity language, not just the DAO](https://blog.blockstack.org/solar-storm-a-serious-security-exploit-with-ethereum-not-just-the-dao-a03d797d98fa)" are very catchy but don't amount to much when one stops to think about how computers operate. This is just how you'd want programs to run, sometimes. Sometimes a function calls a function in another class that calls back to the object that started it all. It's not even uncommon. So to disallow *that* would be to disallow, you know, logic.
 
 If you're gonna be writing code, you're gonna get some rat faeces in there. In software, *Everything is Terrible*&trade;
 
 So let's all calm down for a minute, and think about all these things together.
 
-1. A logic error in a software program does not mean the language is broken.
-2. A vulnerability in a language does not mean the underlying CPU is broken.
-3. A language which allows sloppy code need not be doomed if good tooling can be built around it... but a language which definitively prevents sloppy code is always going to be better.
+1. **A logic error in a software program does not mean the language is broken.**
+2. **A vulnerability in a language does not mean the underlying CPU is broken.**
+3. **A language which allows sloppy code need not be doomed if good tooling can be built around it**... but a language which definitively prevents sloppy code is always going to be better.
 
 ]
 .col2-right[
@@ -2316,6 +2356,9 @@ name: unit-testing-frameworks
 
 
 
+
+
+
 ---
 <h2>Unit testing frameworks</h2>
 
@@ -2325,16 +2368,18 @@ https://github.com/ether-camp/ethereum-testing-reference
 
 https://github.com/androlo/sol-tester & https://github.com/smartcontractproduction/sol-unit
 
-- Simulates executing using the JavaScript VM https://github.com/ethereumjs/ethereumjs-vm
-- Interface is a base `Test` contract providing assertion methods, which should create instances of your testee contracts internally in order to assert against them. 'Real' unit tests in the sense that they're run directly against the code.
+- Simulates executing using the JavaScript EVM implementation
+- Interface is a base `Test` contract providing assertion methods, which should create instances of your testee contracts internally in order to assert against them. Provides 'real' unit tests in the sense that they're run directly against the code.
 
 http://dapple.readthedocs.io/en/master/
 
 - Is actually a complete Dapp development suite, but contains a similar test runner to `sol-unit`.
 - Early days but seriously worth a look! Provides an IPFS data layer in addition to Solidity compilation & deployment, and text & CLI-driven versions of most of the functionality of Mix (simulating chains, transactions, accounts etc). I expect `dappfile` could easily become a standard.
-- Adds natspec-style debugging: `//@warn`, `//@info`, `//@log` & `//@debug` along with any message containing dynamic blocks delimited by `\``. More at http://dapple.readthedocs.io/en/master/logging/
+- Adds natspec-style debugging: `//@warn`, `//@info`, `//@log` & `//@debug` along with any message containing dynamic blocks delimited by backticks. More at http://dapple.readthedocs.io/en/master/logging/
+
 
 ???
+
 Worth a mention RE integration tests: https://www.destroyallsoftware.com/talks/boundaries
 
 
@@ -2399,6 +2444,12 @@ List to come...
 ---
 name: function-libraries
 ## Function libraries
+
+- https://github.com/ethereum/wiki/wiki/Solidity-standard-library
+    - `owned` and `mortal` are the only final ones currently
+    - Generic token, configuration & name registry / service lookup proof of concepts
+- https://github.com/ConsenSys/eth-stdlib
+    - `Permissioned`, presumably many more to come
 
 - `CallProxy` (helper)  
   (fun `setCallTarget(account)`)  
