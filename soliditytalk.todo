@@ -20,11 +20,6 @@ demo code:
       - ADTs along the lines of the C STL
     ☐ passing a string over the ABI
     ☐ quicksort vs. heapsort stats
-filler:
-  ✔ "Blockchain not always best answer" @done (16-07-04 20:58)
-  ✔ types intro @done (16-07-04 20:58)
-  ☐ Contracts calling contracts (scary time)
-  ✔ Enough nuts and bolts, how should we write these things?! @done (16-07-12 17:37)
 
 
 Research:
