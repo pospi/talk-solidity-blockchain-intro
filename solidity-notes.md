@@ -1264,10 +1264,10 @@ Remember this guy?
 > Do not develop Solidity contracts without a reasonable grasp of the underlying Ethereum Virtual Machine execution model, particularly around gas costs.
 
 We're about to see why this stuff is so scary.
-]
 
-???
-:TODO: random img
+.center[<img src="res/randart/scared.jpg" width="400" />]
+
+]
 
 
 
