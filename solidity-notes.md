@@ -2573,6 +2573,8 @@ http://dapple.readthedocs.io/en/master/
 ???
 Worth a mention RE integration tests: https://www.destroyallsoftware.com/talks/boundaries
 
+Also unsure what sort of output each of these gives in terms of gas & storage expenditure.
+
 
 
 
@@ -2651,10 +2653,14 @@ name: function-libraries
 ???
 :TODO: 
 
-- find a well unit-tested storage framework (or make one)
+- find a well unit-tested storage contract framework (or make one)
 - ADTs for efficient storage:
     - Doubly linked list
 - ABI encoders & decoders
+
+Mention useful services:
+  - Ethereum alarm clock
+  - RANDAO https://github.com/randao/randao
 
 <sub>*<em>Please note: you can grab all these by running `./get-example-libs.sh` after cloning this repository.</em></sub>
 
