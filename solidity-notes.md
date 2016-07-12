@@ -2225,22 +2225,58 @@ name: towards-a-better-language
 # Towards a better language?
 
     
-A purely functional language with a rich type system is needed. If we can't have that right now (see *"The FunArg Problem"*), we need tools to write more bug-free code in the languages we have. The Synero network seems to be making progress in this area with the programming language Rho.
+A purely functional language with a rich type system is needed. If we can't have that right now (see *"The FunArg Problem"*), we need tools to write more bug-free code in the languages we have. The [Synero](http://www.synereo.com/) network seems to be making progress in this area with the programming language [Rho](https://github.com/arshajii/rho). And definitely check out [Tezos](https://tezos.com/), which looks like a likely solution to *all* these problems.
 
 Having written C, C++ and Java but also having written JavaScript using functional methodologies it's easy to see how Solidity *could* be leveraged to build rock-solid Dapps. It's also easy to see how you can shoot yourself in the foot with it. Some code smells we seem to be repeating here:
 
-- Contracts in Solidity are basically like *"mixins"* in JavaScript. Without well-named base classes, name collisions and cluttered contract namespaces seem inevitable.
-- Implicit state access between scope is always a bad idea. Always. PHP is the only imperative language I've used that manages lexical scope 'safely'.
+- Contracts in Solidity are basically like *"mixins"* in JavaScript. Without a well-defined standard library, name collisions and cluttered contract namespaces seem inevitable.
+- In my experience, shadowing and implicit state access between scope is always a bad idea. Always. I would like to see a compiler error where two variable names conflict.
 - Being super strict with types and then automatically typecasting a complex `account` object over a 160-bit integer seems like an odd choice :/
 - Creating a paradigm where monolithic contracts are the norm for efficiency reasons is bad for code quality and logic isolation reasons. I don't know if this is happening or what the solution is, but that mindset should be avoided...
 
 ???
 :TODO: test if name collisions do in fact happen
 
-:TODO:
-https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s   (discussion on proof-based languages for smart contracts)
+A discussion on proof-based languages for smart contracts: https://www.youtube.com/watch?v=3mgaDpuMSc0&feature=youtu.be&t=46m20s
 
-Solidity 2.0 roadmap
+
+
+
+
+
+
+
+---
+name: solidity-2.0-roadmap
+
+# Solidity 2.0 roadmap
+
+We'll see the *'Natspec'* `@pre` and `@post` conditions on functions being enforced.
+
+We'll possibly see new languages for verifying contracts ([why3](http://why3.lri.fr/try/)) or contract invariants, which might look something like this:
+
+```
+contract GavCoin {
+    invariants:
+        /// @notice The sum total amount of GAV in the system is 1 million.
+        reduce(0, add, map(valueOf, balances)) == 100000000000;
+}
+```
+
+And we'll hopefully see the introduction of the `dynamic` keyword, which probably relates to the following:
+
+> This specification does not address contracts whose interface is dynamic or otherwise known only at run-time. Should these cases become important they can be adequately handled as facilities built within the Ethereum ecosystem.
+>
+> <cite>https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI</cite>
+
+So Solidity's future could be pretty bright, actually!
+
+
+???
+Docs on these things were hard to find.
+
+Invariants are a lot like formal proofs for the contract actually.
+
 
 
 
@@ -2255,6 +2291,9 @@ name: in-the-meantime
 
 For now, unit tests and better code analysis tools are important. If we can write error-free code in JavaScript using linters and test runners then we can do it here, too... let's just not forget: all software is terrible and .superstress[all risks are amplified].
 
+- https://github.com/weifund/solint - **soon!**
+- https://github.com/raineorshine/solgraph - contract DOT callgraph generator
+- Look out for [Oyente](http://www.comp.nus.edu.sg/%7Eloiluu/papers/oyente.pdf), a code analysis tool being written in Python which will detect such vulnerabilities (and a few others).
 
 
 
@@ -2275,17 +2314,28 @@ name: unit-testing-frameworks
 >
 > <cite>https://docs.erisindustries.com/tutorials/solidity/solidity-4/</cite>
 
-https://github.com/smartcontractproduction/sol-unit
+
+
+---
+<h2>Unit testing frameworks</h2>
+
+https://github.com/ether-camp/ethereum-testing-reference
+
+- Runs tests using the JS interface and asserts them in the browser, so these are really more like integration tests for ordered transactions.
+
+https://github.com/androlo/sol-tester & https://github.com/smartcontractproduction/sol-unit
+
 - Simulates executing using the JavaScript VM https://github.com/ethereumjs/ethereumjs-vm
-- Interface is a base `Test` contract providing assertion methods to be extended from, which should create instances of your testee contracts internally in order to run its tests.
+- Interface is a base `Test` contract providing assertion methods, which should create instances of your testee contracts internally in order to assert against them. 'Real' unit tests in the sense that they're run directly against the code.
 
-https://github.com/androlo/sol-tester
+http://dapple.readthedocs.io/en/master/
 
-https://github.com/nexusdev/dapple/blob/master/doc/test.md
+- Is actually a complete Dapp development suite, but contains a similar test runner to `sol-unit`.
+- Early days but seriously worth a look! Provides an IPFS data layer in addition to Solidity compilation & deployment, and text & CLI-driven versions of most of the functionality of Mix (simulating chains, transactions, accounts etc). I expect `dappfile` could easily become a standard.
+- Adds natspec-style debugging: `//@warn`, `//@info`, `//@log` & `//@debug` along with any message containing dynamic blocks delimited by `\``. More at http://dapple.readthedocs.io/en/master/logging/
 
 ???
-:TODO: finish this
-:TODO: investigate dapple test suite
+Worth a mention RE integration tests: https://www.destroyallsoftware.com/talks/boundaries
 
 
 
