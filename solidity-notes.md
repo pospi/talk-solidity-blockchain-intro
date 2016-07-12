@@ -1148,6 +1148,54 @@ name: contract-structure
   ```
 ]
 
+???
+Summary: Defining contracts is basically like defining classes in any normal language.
+
+
+
+
+
+
+---
+name: natspec-documentation
+.left-column[
+<h1>Control flow & syntax</h1>
+<h2>Interpreter caveats</h2>
+<h2>Function modifiers</h2>
+<h2>Contract structure</h2>
+## Natspec documentation
+]
+.right-column[
+
+It's also worth noting that Ethereum uses Javadoc / JSDoc style comments with some extra extensions in order to make things clearer for the end-user. These blocks appear above contract & function definitions and are delimited by triple slashes. Here's an example from the Ethereum wiki, edited slightly for brevity:
+
+```
+/// @title  Billy's best cryptocurrency
+/// @author Billy Dengus
+contract BilCoin
+{
+  /// @notice Send `(valueInmBIL / 1000).fixed(0,3)` BIL from the account of 
+  /// `message.caller.address()`, to an account accessible only by `to.address()
+  /// @dev Transfers currency between users, mutating `balances`
+  /// @param to          The address of the recipient of the BilCoin
+  /// @param valueInmBil The BilCoin value to send
+  /// @return bool indicating whether the operation succeeded
+  function send(address to, uint256 valueInmBIL) {
+    if (balances[message.caller] >= valueInmBIL) {
+      balances[to] += valueInmBIL;
+      balances[message.caller] -= valueInmBIL;
+      return true;
+    }
+    return false;
+  }
+```
+
+The additional tags indicate messages visible to the end-user when interacting with your contract (`@notice`) or developer when building against it (`@dev`). The dynamic expressions between the <tt>`</tt>s will be evaluated by a JS environment when shown to the user.
+
+<span class="suggestion">Always add these, especially `@notice`.</span>
+
+]
+
 
 
 
