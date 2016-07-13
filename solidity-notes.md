@@ -2422,7 +2422,7 @@ Order of interaction is probably the opposite of how you're used to doing it- us
 
 
 ---
-Always remember, there are:
+<h3>Always remember, there are:</h3>
 
 - .superstress[NO STATE GUARANTEES] outside of the contracts in your project
 - .superstress[NO STATE GUARANTEES] once you interact with any outside contract
@@ -2433,7 +2433,16 @@ And on the whole `transfer` / `Transfer` thing...
 .suggestion[Use more distinguishable conventions than different casing to declare events.]  
 Maybe `function doThing() returns(uint);` goes with `event eDoThing(uint val);`?
 
+<h3>Servers in the new internet</h3>
+
+- In the '90s, we had pets.
+- In the '00s, we started keeping cattle.
+- In the '10s, we'll start running computers like wildlife.
+
 ???
+"Cattle vs. Pets"- usually attributed to Bill Baker of Microsoft.  
+I like "Wildlife" as a way of thinking about it- everything is running of its own volition, you can't trust any individual actor but the overall outcome is predictable and can be relied upon.
+
 :TODO: check if ref vars update in response to other contracts mutating them
 
 
