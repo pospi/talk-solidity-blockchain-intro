@@ -548,9 +548,9 @@ name: reference-types
 
 .col3-left[
 
-All reference types are accessed via variables on your deployed contract. There is no OO-like `static` in the sense of shared memory space on the class that is accessible by all instances of an object. To achieve such an outcome, one would need to deploy a separate shared storage contract to the blockchain and reference its address onto each of your own compiled contracts.
-
 Solidity's reference types take on an additional attribute in their *"context"*- defined as either `storage` or `memory`. This language keyword is all that is needed to differentiate between persistent data stored on-chain and transient data used during intermediate computations.
+
+All storage data is accessed directly via instance variables on your deployed contract. There is no OO-like `static` - to achieve such an outcome one would need to deploy a separate shared storage contract (ie. singleton) separately and reference its address within each of your own compiled contracts.
 
 ]
 .col3-right2[
@@ -576,25 +576,21 @@ name: data-location
 ### Data location
 
 .col2-left[
-For reference types, we have to think about whether the data they reference is only kept in `memory` while the EVM is running this execution cycle, or if they should persist to `storage`.
+If you continue to think of contracts the same as classes, then these data storage semantics should follow:
 
 > The default for function parameters (including return parameters) is `memory`, the default for local variables is `storage` and the location is forced to `storage` for state variables (obviously).
 >
 > <cite>http://solidity.readthedocs.io/en/latest/types.html#data-location</cite>
 
-]
-.col2-right[
-<img src="res/storage-ref-types.png" width="400" />
-]
-
-<br /><br />
-
-If you continue to think of contracts the same as classes, then these semantics should follow:
-
 - Contracts ~= Classes
 - Deployed contracts ~= Objects
 - Contract functions ~= Object methods
 - State (`storage`) variables ~= Instance variables
+
+]
+.col2-right[
+<img src="res/storage-ref-types.png" width="400" />
+]
 ]
 
 ???
@@ -2045,7 +2041,7 @@ If you're concerned about bytecode storage size, use libraries to organise your 
 ???
 Summary: it doesn't matter much in terms of speed, but either technique will lead to larger compiled contract code. Don't create base classes you only use parts of as it will make your contract bigger than necessary (currently).
 
-Note also that inheritance will lead to name collisions.
+Note also that inheritance will lead to name collisions. These seem to be ignored silently by the compiler, perhaps composed over the top of the previous definition. **This will cause bugs.**
 
 :TODO: test bytecode size on different inheritance designs
 
@@ -2065,7 +2061,7 @@ name: delegates
 ]
 .right-column[
 
-`delegatecall` is the solution for structuring your pure library code: allowing you to put common code in places and run it without polluting method namespace of contracts you're creating. Note that mostly you won't even have to use the method manually- when you use Libraries with Mix, the IDE will automatically link your contracts and allow you to write the call as if it were a normal contract within your project.
+`delegatecall` is the mechanism underpinning library code: allowing you to put common code in places and run it without polluting method namespace of contracts you're creating. Note that mostly you won't even have to use this method manually- when you use Libraries with Mix, the IDE will automatically link your contracts and allow you to write the call as if it were a normal contract within your project.
 
 Delegates are about the easiest way to decouple logic from data- simply move all your logic to another contract and assign a reference to its deployed address when you deploy contracts making use of it. More at https://docs.erisindustries.com/tutorials/solidity/solidity-7/
 
@@ -2074,7 +2070,11 @@ It's worth noting that **delegates and libraries are the only ways to reuse code
 ]
 
 ???
-Summary: delegates allow CPU-level code reuse and so create smaller contracts than inheritance-based designs; at the expense of extra external function calls.
+Summary:
+
+Delegates are the underpinning feature which libraries are implemented on. You can use them raw to call *any* contract like a library.
+
+They allow CPU-level code reuse and so create smaller contracts than inheritance-based designs; at the expense of extra external function calls.
 
 
 
