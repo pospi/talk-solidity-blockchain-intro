@@ -67,7 +67,7 @@ Follow along @ <a href="https://pospi.github.io/talk-solidity-blockchain-intro/"
 Contribute @ <a href="https://github.com/pospi/talk-solidity-blockchain-intro">github.com/pospi/talk-solidity-blockchain-intro</a> (<tt>solidity-notes.md</tt>)
 
 ???
-Intro self; talk about how after a few years you realise it's all the same thing. This is no different, and if you think a little about what's going on there are reasons for all the weirdnesses.
+Intro self; talk about how after a few years you realise software is all the same thing. This is no different, and if you think a little about what's going on there are reasons for all the weirdnesses.
 
 So hopefully you'll come out of this understanding a bit more about how blockchain computation is the same as regular computing, and how it's different.
 
@@ -223,7 +223,7 @@ Solidity should be thought of as a *systems programming language*. Though syntac
 ]
 .col2-right[
 
-**Ethereum is a low-level system**. Think of it like programming for an Arduino board, Onion Omega or Raspberry Pi. Resources are extremely scarce.
+**Ethereum is a low-level system**. Think of it like programming for an Arduino board, an old ARM processor or a microcontroller. Resources are extremely scarce.
 
 - Ethereum blockchain ~= RAM ~= Hard Drive
 - Ethereum Virtual Machine (EVM) ~= Java Virtual Machine (JVM) ~= x86 CPU
