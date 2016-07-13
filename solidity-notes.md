@@ -140,8 +140,8 @@ I say 'knowledge remix' because this is my current interpretation of the blockch
 - [Solidity 2.0 roadmap](#solidity-20-roadmap)
 - [In the meantime](#in-the-meantime)
     - [Unit testing frameworks](#unit-testing-frameworks)
-    - [Contract base classes](#contract-base-classes)
-    - [Function libraries](#function-libraries)
+    - [Code to learn from](#code-to-learn-from)
+    - [On-chain services](#on-chain-services)
 - [Final observations](#final-observations)
 
 <!-- /MarkdownTOC -->
@@ -496,6 +496,8 @@ name: value-types
 
 ???
 Mention link to unit converter.
+
+We may be missing bitwise shift! see `density/functions/bitwise.sol`
 
 EVM word size is 256 bits (I think)
 
@@ -2505,6 +2507,8 @@ name: solidity-2.0-roadmap
 
 # Solidity 2.0 roadmap
 
+Template types for library functions look likely to be implemented (see `future_solidity/heap.sol`).
+
 We'll see the *'Natspec'* `@pre` and `@post` conditions on functions being enforced.
 
 We'll possibly see new languages for verifying contracts ([why3](http://why3.lri.fr/try/)) or contract invariants, which might look something like this:
@@ -2548,6 +2552,9 @@ For now, unit tests and better code analysis tools are important. If we can writ
 - https://github.com/weifund/solint - **soon!**
 - https://github.com/raineorshine/solgraph - contract DOT callgraph generator
 - Look out for [Oyente](http://www.comp.nus.edu.sg/%7Eloiluu/papers/oyente.pdf), a code analysis tool being written in Python which will detect such vulnerabilities (and a few others).
+
+???
+DOT files work well with VSCode btw
 
 
 
@@ -2607,32 +2614,36 @@ Also unsure what sort of output each of these gives in terms of gas & storage ex
 
 
 ---
-name: contract-base-classes
-## Contract base classes 
+name: code-to-learn-from
+## Code to learn from
 
-List to come...
+Ongoing attempts at standardising a core API:
+
+- https://github.com/ethereum/wiki/wiki/Solidity-standard-library
+    - `owned` and `mortal` are the only final ones currently
+    - Generic token, configuration & name registry / service lookup proof of concepts
+- https://github.com/ConsenSys/eth-stdlib
+    - `Permissioned`, presumably many more to come
+
+
+
+---
+<h2>Code to learn from</h2>
+
+You can clone a bunch of potentially useful things I've found by running `./get-example-libs.sh` in the root of this repository. The referenced repositories will be cloned into the `examples` directory. Some noteworthy pieces:
+
+Other generic abstractions:
+
+- Name registrar: see `ens`, `dapp-bin/namereg` and `dapp-bin/registrar`
+- Config DB: `dapp-bin/config`
+- `standardized_contract_apis`
+
+Architectural patterns:
+
+- `dappsys/contracts` seems to be a real-world project with good separation of concerns between storage and controller.
 
 ???
-:TODO: audit this stuff again, get more specific links
-
-- https://github.com/Arachnid/ens - Ethereum Name Service
-- https://github.com/Arachnid/solidity-stringutils
-- https://github.com/axic/density
-- https://github.com/axic/etherboard
-- https://github.com/chriseth/solidity-examples
-- https://github.com/dadaista/bitshelter
-- https://github.com/emailgregn/contracts
-- https://github.com/fivedogit/solidity-baby-steps/
-- https://github.com/FrankHold/DApp_SyntheticTrader
-- https://github.com/JeffreyBPetersen/contract-testing
-- https://github.com/JeffreyBPetersen/data-sharing-contracts
-- https://github.com/nexusdev/dappsys
-- https://github.com/nickfranklinuk/canary
-- https://github.com/phillyfan1138/DArtist
-- https://github.com/smartcontractproduction/dao
-- https://github.com/zmitton/ethereum_escrow
-
-......
+:TODO:
 
 - `Destructible`  
   (fun `destroy`)
@@ -2652,42 +2663,64 @@ List to come...
       (ifce `calcPurchaseAmount`)  
       (ifce `calcWithdrawAmount`)  
       (ifce `calcVotingInput`)
-- really don't want to have to do `MajoritySplittable` etc, am I doing it wrong?
-- thinking conventions... 'owner'/'purchase'/'calc' for things involving $!
-- registrar: see `dapp-bin/registry`
-- helpers for managing common fallback function & suicide behaviours
-
-
-
----
-name: function-libraries
-## Function libraries
-
-- https://github.com/ethereum/wiki/wiki/Solidity-standard-library
-    - `owned` and `mortal` are the only final ones currently
-    - Generic token, configuration & name registry / service lookup proof of concepts
-- https://github.com/ConsenSys/eth-stdlib
-    - `Permissioned`, presumably many more to come
-
 - `CallProxy` (helper)  
   (fun `setCallTarget(account)`)  
   *(however methods are proxied?)*
 - `AccountList` (datatype)  
   (fun `indexOf(account)`)
+- really don't want to have to do `MajoritySplittable` etc, am I doing it wrong?
+- thinking conventions... 'owner'/'purchase'/'calc' for things involving $!
+
+
+
+
+---
+<h2>Code to learn from</h2>
+
+Useful functions:
+
+- Contract deactivation: `density/modifiers/deactivate.sol`
+- Missing bit-shift operators: `density/functions/bitwise.sol` (not sure if relevant anymore)
+
+Datatypes:
+
+- Linked list: `library/linkedList.sol`
+- Strings:
+    - `library/stringUtils.sol`
+    - `solidity-stringutils`
+
 
 ???
 :TODO: 
 
+- helpers for managing common fallback function & suicide behaviours
 - find a well unit-tested storage contract framework (or make one)
 - ADTs for efficient storage:
     - Doubly linked list
 - ABI encoders & decoders
 
-Mention useful services:
-  - Ethereum alarm clock
-  - RANDAO https://github.com/randao/randao
 
-<sub>*<em>Please note: you can grab all these by running `./get-example-libs.sh` after cloning this repository.</em></sub>
+
+
+
+
+
+---
+name: on-chain-services
+## On-chain services
+
+**Ethereum alarm clock**: crowd-enabled task scheduling  
+  http://www.ethereum-alarm-clock.com/
+
+**The RANDAO**: a source of randomness on the blockchain  
+  https://github.com/randao/randao
+
+**oraclize.it**: connecting the cloud to the blockchain  
+  http://www.oraclize.it/
+
+???
+Well, oraclize isn't really "on" the chain but 'evs
+
 
 
 
