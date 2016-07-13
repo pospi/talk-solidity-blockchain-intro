@@ -63,10 +63,15 @@ template: start
 
 <h3>A knowledge remix</h3>
 
-???
-Intro self; talk about how after a few years you realise it's all the same thing. This is no different, and if you think a little about what's going on there are reasons for all the weirdnesses.
+Follow along @ <a href="https://pospi.github.io/talk-solidity-blockchain-intro/">pospi.github.io/talk-solidity-blockchain-intro/</a><br />
+Contribute @ <a href="https://github.com/pospi/talk-solidity-blockchain-intro">github.com/pospi/talk-solidity-blockchain-intro</a> (<tt>solidity-notes.md</tt>)
 
-So hopefully you'll come out of this understanding a bit more about how blockchain computation is the same as regular computing, and what's new about it.
+???
+Intro self; talk about how after a few years you realise software is all the same thing. This is no different, and if you think a little about what's going on there are reasons for all the weirdnesses.
+
+So hopefully you'll come out of this understanding a bit more about how blockchain computation is the same as regular computing, and how it's different.
+
+I say 'knowledge remix' because this is my current interpretation of the blockchain space. In no way am I an expert, this is the end result of like 2 weeks of research and application of my general knowledge as to how computers work... but there are no experts yet anyway really, and it's up to us in the community to become experts ourselves if we want things to evolve!
 
 ---
 # Agenda
@@ -135,15 +140,17 @@ So hopefully you'll come out of this understanding a bit more about how blockcha
 - [Solidity 2.0 roadmap](#solidity-20-roadmap)
 - [In the meantime](#in-the-meantime)
     - [Unit testing frameworks](#unit-testing-frameworks)
-    - [Contract base classes](#contract-base-classes)
-    - [Function libraries](#function-libraries)
+    - [Code to learn from](#code-to-learn-from)
+    - [On-chain services](#on-chain-services)
 - [Final observations](#final-observations)
 
 <!-- /MarkdownTOC -->
 ]
 
 ???
-Lots to get through! Much stuff will be skipped but you can download & review the presentation any time.
+Lots to get through! Kinda got carried away and now I want it to be reference material in its own right.
+
+Much stuff will be skipped but you can download & review the presentation any time. These links work.
 
 
 
@@ -169,6 +176,8 @@ You can find the syntax highlighting package for [highlightjs.org](https://highl
 
 ???
 The main ones you'll want to care about are the oranges, reds and blues; because these indicate contracts and their interactions.
+
+Also syntax highlighting came out of this yay
 
 
 
@@ -214,7 +223,7 @@ Solidity should be thought of as a *systems programming language*. Though syntac
 ]
 .col2-right[
 
-**Ethereum is a low-level system**. Think of it like programming for an Arduino board, Onion Omega or Raspberry Pi. Resources are extremely scarce.
+**Ethereum is a low-level system**. Think of it like programming for an Arduino board, an old ARM processor or a microcontroller. Resources are extremely scarce.
 
 - Ethereum blockchain ~= RAM ~= Hard Drive
 - Ethereum Virtual Machine (EVM) ~= Java Virtual Machine (JVM) ~= x86 CPU
@@ -291,6 +300,9 @@ function learnSmartContractDevWhenReady(dev, startLearningSolidity) {
     }, 1000 * 60 * 60 * 24 * 30);
 }
 ```
+
+???
+Point is, you'd want to be comfortable with memory manipulation for a while before starting. A month might be too soon.
 
 
 
@@ -388,7 +400,7 @@ Eth 2.0 / proof of stake, Peercoin, Litecoin & even Ripple (despite its politica
 name: quantifying-efficiency
 # Quantifying 'efficiency'
 
-Three metrics: gas cost (in `wei`), reserved storage size (in `bytes`) & bytecode size (also measurable in `bytes`). Note that contract storage is statically allocated *once* at the time you deploy a contract and its size never changes thereafter, so some interfaces may give you back a single value for *'contract size'* at the time of compilation.
+Three metrics: gas cost (in `wei`), reserved storage size (in `bytes`) & bytecode size (also measurable in `bytes`). Note that contract storage is statically allocated *once* at the time you deploy a contract, so some interfaces may give you back a single value for *'contract size'* at the time of compilation.
 
 
 --
@@ -402,6 +414,9 @@ In general, you will want to prioritise architectural decisions in this order. N
 - Storage and bytecode size are equivalent priorities, but storage is more under your control:
     - Be dilligent about utilising contract storage variables fully and allocating as little space as possible for dynamic arrays. 
     - Learn to understand how the Solidity compiler handles your code and build up a library of optimal libraries and algorithms for common tasks. Use Mix or your test framework to compare bytecode sizes for contract generation.
+
+???
+:TODO: can size change thereafter?
 
 
 
@@ -468,7 +483,7 @@ name: value-types
     - uses 1 byte for storage
 - fixed byte arrays: `byte`/`bytes1`..`bytes32`
     - actually these are just different ways of talking about integers (256 bits === 32 bytes; `bytes32` is really just `uint256` by a different name).
-    - assignment must be done with bitwise operators currently
+    - can be indexed using array operators, but assignment must be done with bitwise operators currently...
     - has a `length` attribute
 - No floats, but fixed-point math is built in to the syntax
     - see `ufixed8x248`, `ufixed128x128` and similar types- 
@@ -480,7 +495,9 @@ name: value-types
 ]
 
 ???
-:TODO: need to check about byte array assignment.. pretty sure that info is old.
+Mention link to unit converter.
+
+We may be missing bitwise shift! see `density/functions/bitwise.sol`
 
 EVM word size is 256 bits (I think)
 
@@ -785,7 +802,7 @@ You can't make `storage` arrays all that large in practise:
 
 - Array types will be coerced to the most generic type of its contents. So an array with many `uint8`s in it will be interpreted as `uint8`, whereas one containing both `uint8` and `uint16` would be interpreted as `uint16`.
 - Fixed-size and dynamically-sized arrays cannot be mixed *(yet- this is planned to be resolved in future)*
-- Dynamic arrays cannot be returned from external contract function calls *(yet)*. However such return data *can* be retrieved by `web3.js` in the browser layer of your Dapps.
+- Dynamic arrays cannot be returned from external contract function calls *(yet)*. However such return data *can* be retrieved by `web3.js` in the browser layer of your ÐApps.
 ]
 
 ???
@@ -1318,6 +1335,9 @@ As mentioned, the EVM has many languages which compile down to its CPU bytecode.
 
 ]
 
+???
+Essentially you end up wanting to encode everything as byte arrays at the boundaries between contracts.
+
 
 
 
@@ -1363,7 +1383,7 @@ Solidity's more complex datatypes can't be passed through external contract func
 
 *However*- if one has access to the header files of a contract then its constructor can be applied over a known address where said contract has been uploaded as a typecast (ie. `KnownContract(0x123ABCEF)`), as is done automatically by Mix with contracts within your project. You can then use the existing contract's internal Solidity datatypes as usual.
 
-To interface with a known contract from the Dapp layer, you'll need to generate an ABI definition for it. The [solidity-abi](https://github.com/blockapps/solidity-abi/) Haskell library can do this, or you can paste the source code into http://chriseth.github.io/browser-solidity and copy the `interface` value.
+To interface with a known contract from the ÐApp layer, you'll need to generate an ABI definition for it. The [solidity-abi](https://github.com/blockapps/solidity-abi/) Haskell library can do this, or you can paste the source code into http://chriseth.github.io/browser-solidity and copy the `interface` value.
 
 ]
 
@@ -1847,7 +1867,7 @@ Events can also be `anonymous`, which prevents the event signature being stored 
 ]
 .right-column[
 
-You can mark event parameters as `indexed`, which will display them as topics in the transaction log explorer and allow searching on them. This is important in the JavaScript layer of your Dapps, as filtering the event data from the chain transaction logs is the only way to listen for particular events. Perhaps easiest explained by example...
+You can mark event parameters as `indexed`, which will display them as topics in the transaction log explorer and allow searching on them. This is important in the JavaScript layer of your ÐApps, as filtering the event data from the chain transaction logs is the only way to listen for particular events. Perhaps easiest explained by example...
 
 .caveat[A maximum of 3 event parameters can be marked as indexed]
 
@@ -1878,7 +1898,7 @@ contract MyBank {
 ```
 ]
 .col2-right[
-Dapp JavaScript:
+ÐApp JavaScript:
 
 ```js
 myContract.TransactionMade().watch((err, result) => {
@@ -1905,7 +1925,7 @@ Only #1 fires if another user does it.
 ]
 
 ???
-Summary: indexing events allows client Dapps to bind to particular channels in a more fine-grained way.
+Summary: indexing events allows client ÐApps to bind to particular channels in a more fine-grained way.
 
 :TODO: above needs testing
 
@@ -1948,7 +1968,7 @@ The EVM has an artificial stack depth limit of 1024 to prevent runaway contracts
 
 Only external function calls have an impact on stack depth. Internal functions are implemented as `JUMP` instructions within the virtual CPU. Library function calls count towards stack depth, inherited functions don't. Keep these factors in mind when designing your contracts.
 
-.suggestion[Recurse like crazy when using internal function calls.]  
+.suggestion[Recurse as much as you like when using internal function calls.]  
 .suggestion[Avoid recursing when using external function calls], unless you have validated your code to work only under known scenarios where a necessarily shallow call-depth is expected.
 ]
 
@@ -2055,8 +2075,6 @@ It's worth noting that **delegates and libraries are the only ways to reuse code
 
 ???
 Summary: delegates allow CPU-level code reuse and so create smaller contracts than inheritance-based designs; at the expense of extra external function calls.
-
-:TODO: update this slide when determined whether manually linking library contracts is doable.
 
 
 
@@ -2168,7 +2186,7 @@ Thinking of your contracts in these terms will be extremely helpful in building 
 
 <h3>Action-driven architecture</h3>
 
-Creating contracts to represent actions within your system can be a powerful way of structuring things where the utmost flexibility is required. However, it can lead to a lot of extra complexity- https://docs.erisindustries.com/tutorials/solidity/solidity-2/
+Creating contracts to represent actions within your system can be a powerful way of structuring things where the utmost flexibility is required. Seems like a nice design- very Smalltalk / Actor-Model-ish. However, it can lead to a lot of extra complexity- https://docs.erisindustries.com/tutorials/solidity/solidity-2/
 ]
 
 
@@ -2199,6 +2217,18 @@ The loop one is pretty heinous.
 
 
 ---
+count: false
+.col2-left[
+<h1>TheDAO hack: what went wrong?</h1>
+]
+.col2-right[
+.center[<img src="res/randart/hackedorly.jpg" />]
+]
+
+???
+It's OK for me to pay this out because I lost my money too :p
+
+---
 name: thedao-hack-what-went-wrong
 .col2-left[
 # TheDAO hack: what went wrong?
@@ -2225,15 +2255,19 @@ function splitDAO(
     return true;
 }
 
-function transfer(address _to, uint256 _value) returns(bool success) { /* ... */ }
+// ...
 
-event Transfer(address indexed _from, address indexed _to, uint256 _amount);
+function transfer(address _to, uint256 _value) returns(bool success) { /* ... */ }
 ```
 
 ]
 .col2-right[
 
 ```
+event Transfer(address indexed _from, address indexed _to, uint256 _amount);
+
+// ...
+
 function withdrawRewardFor(address _account) noEther internal returns(bool _success) {
     if ((balanceOf(_account) * rewardAccount.accumulatedInput()) / totalSupply < paidOut[_account])
         throw;
@@ -2354,7 +2388,7 @@ Functional programming tenet: **state is evil.**
 - https://github.com/ConsenSys/smart-contract-best-practices#smart-contract-security-bibliography (includes all of the above, and more)
 
 ???
-We've made this mistake many times before in software.
+We've made this mistake many times before in software. Part of that is necessity due to limiting system constraints.
 
 
 
@@ -2369,29 +2403,47 @@ name: guidelines-to-avoid-this-pitfall
 - Ensure you update your contract's own internal state **before** interacting with any external addresses.
 - If these interactions fail, handle the effect in a way which **does not interfere** with **any other address** being processed.
 - Presume any methods in your contract other than `internal` and `private` ones will be called by contracts other than those you expect.
-- **Always** specify a gas amount when calling other contracts (which prevents them being attackable by sending any amount of gas).
+- Presume any call to an externally accessible contract method you define may run out of gas and fail.
+- Never presume that an address implies a user. An address does not guarantee a real person.
 - Use `send` instead of `call` wherever possible. Even then, ensure you **handle failures correctly**, and again, update your contract's own state **first**.
   > send is safer to use since by default it doesn't forward any gas, so the receiver's fallback function can only emit events.
   >
   > <cite>http://ethereum.stackexchange.com/a/6474/2665</cite>
-- Presume any call to an externally accessible contract method you define may run out of gas and fail.
-- Never presume that an address implies a user. An address does not guarantee a real person.
+- **Always** specify a gas amount when calling other contracts (which prevents them being attackable by sending any amount of gas).
 
-Always remember, there are:
+???
+All these things are really about guarding against race conditions and mutable state.
+
+Order of interaction is probably the opposite of how you're used to doing it- usually one would run the operation first and then check failure before updating internal state to match; but in a trustless system it's quite the opposite.
+
+"Specify a gas amount"- because an external contract might send heaps of gas into a method in order to be able to recursively call back into your own contract many times over. Limiting gas reduces this risk.
+
+
+
+
+---
+<h3>Always remember, there are:</h3>
 
 - .superstress[NO STATE GUARANTEES] outside of the contracts in your project
 - .superstress[NO STATE GUARANTEES] once you interact with any outside contract
 
 Imagine it as if another thread might come in and modify your memory at any time. If the hash of the contract you're interacting with matches some source, then you can predict it just fine. If not- all bets are off and *any* of your externally accessible methods may be called.
 
-???
-All these things are really about guarding against race conditions.
+And on the whole `transfer` / `Transfer` thing...  
+.suggestion[Use more distinguishable conventions than different casing to declare events.]  
+Maybe `function doThing() returns(uint);` goes with `event eDoThing(uint val);`?
 
-"Specify a gas amount"- because an external contract might send heaps of gas into a method in order to be able to recursively call back into your own contract many times over. Limiting gas reduces this risk.
+<h3>Servers in the new internet</h3>
+
+- In the '90s, we had pets.
+- In the '00s, we started keeping cattle.
+- In the '10s, we'll start running computers like wildlife.
+
+???
+"Cattle vs. Pets"- usually attributed to Bill Baker of Microsoft.  
+I like "Wildlife" as a way of thinking about it- everything is running of its own volition, you can't trust any individual actor but the overall outcome is predictable and can be relied upon.
 
 :TODO: check if ref vars update in response to other contracts mutating them
-
-:TODO: suggest better naming convention for events
 
 
 
@@ -2440,7 +2492,7 @@ So let's all calm down for a minute, and think about all these things together.
 Bullet points are all that really needs mentioning here.
 
 But the point still stands- should the network correct & account for these things at a protocol level, or are there cases where the functionality these bugs expose is in fact critical for the funcctioning of the whole platform?
-And if that's the case- then you have a rather awkward catch-22 situation at a core system level.
+And if that's the case- then you have a rather awkward catch-22 situation at a core system level- not just with Ethereum but with blockchain computing in general.
 
 :TODO: checkCaller method decorator thing to ensure caller is an instance of something else?
 
@@ -2454,7 +2506,7 @@ name: towards-a-better-language
     
 A purely functional language with a rich type system is needed. If we can't have that right now (see *"The FunArg Problem"*), we need tools to write more bug-free code in the languages we have. The [Synero](http://www.synereo.com/) network seems to be making progress in this area with the programming language [Rho](https://github.com/arshajii/rho). And definitely check out [Tezos](https://tezos.com/), which looks like a likely solution to *all* these problems.
 
-Having written C, C++ and Java but also having written JavaScript using functional methodologies it's easy to see how Solidity *could* be leveraged to build rock-solid Dapps. It's also easy to see how you can shoot yourself in the foot with it. Some code smells we seem to be repeating here:
+Having written C, C++ and Java but also having written JavaScript using functional methodologies it's easy to see how Solidity *could* be leveraged to build rock-solid ÐApps. It's also easy to see how you can shoot yourself in the foot with it. Some code smells we seem to be repeating here:
 
 - Contracts in Solidity are basically like *"mixins"* in JavaScript. Even with a well-defined standard library, name collisions and cluttered contract namespaces seem inevitable.
 - In my experience, shadowing and implicit state access between scope is always a bad idea. Always. I would like to see a compiler error where two variable names conflict.
@@ -2479,6 +2531,8 @@ A discussion on proof-based languages for smart contracts: https://www.youtube.c
 name: solidity-2.0-roadmap
 
 # Solidity 2.0 roadmap
+
+Template types for library functions look likely to be implemented (see `future_solidity/heap.sol`).
 
 We'll see the *'Natspec'* `@pre` and `@post` conditions on functions being enforced.
 
@@ -2524,6 +2578,9 @@ For now, unit tests and better code analysis tools are important. If we can writ
 - https://github.com/raineorshine/solgraph - contract DOT callgraph generator
 - Look out for [Oyente](http://www.comp.nus.edu.sg/%7Eloiluu/papers/oyente.pdf), a code analysis tool being written in Python which will detect such vulnerabilities (and a few others).
 
+???
+DOT files work well with VSCode btw
+
 
 
 
@@ -2565,7 +2622,7 @@ https://github.com/androlo/sol-tester & https://github.com/smartcontractproducti
 
 http://dapple.readthedocs.io/en/master/
 
-- Is actually a complete Dapp development suite, but contains a similar test runner to `sol-unit`.
+- Is actually a complete ÐApp development suite, but contains a similar test runner to `sol-unit`.
 - Early days but seriously worth a look! Provides an IPFS data layer in addition to Solidity compilation & deployment, and text & CLI-driven versions of most of the functionality of Mix (simulating chains, transactions, accounts etc). I expect `dappfile` could easily become a standard.
 - Adds natspec-style debugging: `//@warn`, `//@info`, `//@log` & `//@debug` along with any message containing dynamic blocks delimited by backticks. More at http://dapple.readthedocs.io/en/master/logging/
 
@@ -2582,32 +2639,36 @@ Also unsure what sort of output each of these gives in terms of gas & storage ex
 
 
 ---
-name: contract-base-classes
-## Contract base classes 
+name: code-to-learn-from
+## Code to learn from
 
-List to come...
+Ongoing attempts at standardising a core API:
+
+- https://github.com/ethereum/wiki/wiki/Solidity-standard-library
+    - `owned` and `mortal` are the only final ones currently
+    - Generic token, configuration & name registry / service lookup proof of concepts
+- https://github.com/ConsenSys/eth-stdlib
+    - `Permissioned`, presumably many more to come
+
+
+
+---
+<h2>Code to learn from</h2>
+
+You can clone a bunch of potentially useful things I've found by running `./get-example-libs.sh` in the root of this repository. The referenced repositories will be cloned into the `examples` directory. Some noteworthy pieces:
+
+Other generic abstractions:
+
+- Name registrar: see `ens`, `dapp-bin/namereg` and `dapp-bin/registrar`
+- Config DB: `dapp-bin/config`
+- `standardized_contract_apis`
+
+Architectural patterns:
+
+- `dappsys/contracts` seems to be a real-world project with good separation of concerns between storage and controller.
 
 ???
-:TODO: audit this stuff again, get more specific links
-
-- https://github.com/Arachnid/ens - Ethereum Name Service
-- https://github.com/Arachnid/solidity-stringutils
-- https://github.com/axic/density
-- https://github.com/axic/etherboard
-- https://github.com/chriseth/solidity-examples
-- https://github.com/dadaista/bitshelter
-- https://github.com/emailgregn/contracts
-- https://github.com/fivedogit/solidity-baby-steps/
-- https://github.com/FrankHold/DApp_SyntheticTrader
-- https://github.com/JeffreyBPetersen/contract-testing
-- https://github.com/JeffreyBPetersen/data-sharing-contracts
-- https://github.com/nexusdev/dappsys
-- https://github.com/nickfranklinuk/canary
-- https://github.com/phillyfan1138/DArtist
-- https://github.com/smartcontractproduction/dao
-- https://github.com/zmitton/ethereum_escrow
-
-......
+:TODO:
 
 - `Destructible`  
   (fun `destroy`)
@@ -2627,42 +2688,64 @@ List to come...
       (ifce `calcPurchaseAmount`)  
       (ifce `calcWithdrawAmount`)  
       (ifce `calcVotingInput`)
-- really don't want to have to do `MajoritySplittable` etc, am I doing it wrong?
-- thinking conventions... 'owner'/'purchase'/'calc' for things involving $!
-- registrar: see `dapp-bin/registry`
-- helpers for managing common fallback function & suicide behaviours
-
-
-
----
-name: function-libraries
-## Function libraries
-
-- https://github.com/ethereum/wiki/wiki/Solidity-standard-library
-    - `owned` and `mortal` are the only final ones currently
-    - Generic token, configuration & name registry / service lookup proof of concepts
-- https://github.com/ConsenSys/eth-stdlib
-    - `Permissioned`, presumably many more to come
-
 - `CallProxy` (helper)  
   (fun `setCallTarget(account)`)  
   *(however methods are proxied?)*
 - `AccountList` (datatype)  
   (fun `indexOf(account)`)
+- really don't want to have to do `MajoritySplittable` etc, am I doing it wrong?
+- thinking conventions... 'owner'/'purchase'/'calc' for things involving $!
+
+
+
+
+---
+<h2>Code to learn from</h2>
+
+Useful functions:
+
+- Contract deactivation: `density/modifiers/deactivate.sol`
+- Missing bit-shift operators: `density/functions/bitwise.sol` (not sure if relevant anymore)
+
+Datatypes:
+
+- Linked list: `library/linkedList.sol`
+- Strings:
+    - `library/stringUtils.sol`
+    - `solidity-stringutils`
+
 
 ???
 :TODO: 
 
+- helpers for managing common fallback function & suicide behaviours
 - find a well unit-tested storage contract framework (or make one)
 - ADTs for efficient storage:
     - Doubly linked list
 - ABI encoders & decoders
 
-Mention useful services:
-  - Ethereum alarm clock
-  - RANDAO https://github.com/randao/randao
 
-<sub>*<em>Please note: you can grab all these by running `./get-example-libs.sh` after cloning this repository.</em></sub>
+
+
+
+
+
+---
+name: on-chain-services
+## On-chain services
+
+**Ethereum alarm clock**: crowd-enabled task scheduling  
+  http://www.ethereum-alarm-clock.com/
+
+**The RANDAO**: a source of randomness on the blockchain  
+  https://github.com/randao/randao
+
+**oraclize.it**: connecting the cloud to the blockchain  
+  http://www.oraclize.it/
+
+???
+Well, oraclize isn't really "on" the chain but 'evs
+
 
 
 
