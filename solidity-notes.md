@@ -2217,6 +2217,18 @@ The loop one is pretty heinous.
 
 
 ---
+count: false
+.col2-left[
+<h1>TheDAO hack: what went wrong?</h1>
+]
+.col2-right[
+.center[<img src="res/randart/hackedorly.jpg" />]
+]
+
+???
+It's OK for me to pay this out because I lost my money too :p
+
+---
 name: thedao-hack-what-went-wrong
 .col2-left[
 # TheDAO hack: what went wrong?
@@ -2243,15 +2255,19 @@ function splitDAO(
     return true;
 }
 
-function transfer(address _to, uint256 _value) returns(bool success) { /* ... */ }
+// ...
 
-event Transfer(address indexed _from, address indexed _to, uint256 _amount);
+function transfer(address _to, uint256 _value) returns(bool success) { /* ... */ }
 ```
 
 ]
 .col2-right[
 
 ```
+event Transfer(address indexed _from, address indexed _to, uint256 _amount);
+
+// ...
+
 function withdrawRewardFor(address _account) noEther internal returns(bool _success) {
     if ((balanceOf(_account) * rewardAccount.accumulatedInput()) / totalSupply < paidOut[_account])
         throw;
