@@ -1,9 +1,7 @@
 ☐ thankspic
-Slide deck:
- ☐ setup script for cloning libraries: get-example-libs.sh
 verify stuff:
   ☐ test if name collisions do in fact happen when inheriting classes with same methods
-  ☐ is contract storage & bytecode same block of memory or can storage vary?0
+  ☐ is contract storage & bytecode same block of memory or can storage vary?
     (Quantifying 'efficiency')
   ☐ test "contrived contract source" example
   ☐ test "contract switch"
@@ -17,9 +15,8 @@ verify stuff:
   ☐ can you assign functions to state vars?
 demo code:
   optional:
-    ☐ audit function libraries and pull / link useful ones
-      - ABI encoders / decoders
-      - ADTs along the lines of the C STL
+    - ABI encoders / decoders
+    - ADTs along the lines of the C STL
     ☐ passing a string over the ABI
     ☐ quicksort vs. heapsort stats
 
