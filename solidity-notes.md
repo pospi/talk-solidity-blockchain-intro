@@ -12,10 +12,10 @@ layout: true
 <footer>
     <ul>
         <li><img src="./res/avatar_128x128-4.png" /><strong>pospi</strong></li>
-        <li><i class="icon-link"></i> pospi.spadgos.com</li>
-        <li><i class="icon-github"></i> github.com/pospi</li>
+        <li><i class="icon-link"></i> <a href="http://pospi.spadgos.com/">pospi.spadgos.com</a></li>
+        <li><i class="icon-github"></i> <a href="https://github.com/pospi/">github.com/pospi</a></li>
         <li><i class="icon-mail"></i> pospi@spadgos.com</li>
-        <li><i class="icon-twitter"></i> twitter.com/pospigos</li>
+        <li><i class="icon-twitter"></i> <a href="https://twitter.com/pospigos/">twitter.com/pospigos</a></li>
     </ul>
 </footer>
 
@@ -29,10 +29,10 @@ background-image: url(./res/leaf.jpg)
     <ul>
         <li class="center"><strong>pospi</strong><br /><img src="./res/avatar_128x128-4.png" /></li>
     </ul><ul>
-        <li><i class="icon-link"></i> pospi.spadgos.com</li>
+        <li><i class="icon-link"></i> <a href="http://pospi.spadgos.com/">pospi.spadgos.com</a></li>
         <li><i class="icon-mail"></i> pospi@spadgos.com</li>
-        <li><i class="icon-github"></i> github.com/pospi</li>
-        <li><i class="icon-twitter"></i> twitter.com/pospigos</li>
+        <li><i class="icon-github"></i> <a href="https://github.com/pospi/">github.com/pospi</a></li>
+        <li><i class="icon-twitter"></i> <a href="https://twitter.com/pospigos/">twitter.com/pospigos</a></li>
     </ul>
 </div>
 
