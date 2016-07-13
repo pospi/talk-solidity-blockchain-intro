@@ -1,6 +1,5 @@
 ☐ thankspic
 verify stuff:
-  ☐ test if name collisions do in fact happen when inheriting classes with same methods
   ☐ is contract storage & bytecode same block of memory or can storage vary?
     (Quantifying 'efficiency')
   ☐ test "contrived contract source" example
