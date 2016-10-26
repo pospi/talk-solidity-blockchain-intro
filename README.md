@@ -1,6 +1,6 @@
 Some slides on Solidity as a blockchain programming language.
 
-http://pospi.spadgos.com/2016/10/01/solidity-smart-contracts-primer/
+http://pospi.spadgos.com/2016/10/01/solidity-smart-contracts-primer/  
 https://pospi.github.io/talk-solidity-blockchain-intro/
 
 Built using http://remarkjs.com/ and http://rollupjs.org  
